@@ -10,7 +10,9 @@ Nguồn tham khảo:
 - Chainstack: https://docs.chainstack.com/docs/base-tutorial-deploy-a-b20-token
 - Base std library: https://github.com/base/base-std
 
-## Token mặc định
+## Thông tin token có thể đổi
+
+Các giá trị dưới đây chỉ là mặc định khi mở app. Người dùng có thể sửa trong web app trước khi deploy:
 
 - Name: `DieuTX B20`
 - Symbol: `DIEUTX`
@@ -18,8 +20,9 @@ Nguồn tham khảo:
 - Decimals: `18`
 - Supply cap: `1,000,000`
 - Initial mint gợi ý: `1,000`
+- Salt: `dieutx-b20-v1`
 
-Bạn có thể sửa trực tiếp trong web app trước khi deploy.
+Nên đổi **Salt** mỗi lần muốn tạo token mới. Nếu dùng cùng ví và cùng salt trên cùng network, factory có thể báo token đã tồn tại.
 
 ## Tạo private repo `dieutx/base-b20`
 
@@ -38,33 +41,30 @@ git remote add origin https://github.com/dieutx/base-b20.git
 git push -u origin main
 ```
 
-## Chạy bằng GitHub Codespaces
+## Chạy nhanh bằng GitHub Codespaces
 
-1. Mở repo `dieutx/base-b20` trên GitHub.
-2. Chọn **Code** -> **Codespaces** -> **Create codespace on main**.
-3. Trong terminal Codespaces, chạy:
+1. Mở `https://github.com/dieutx/base-b20`.
+2. Bấm **Code** -> **Codespaces** -> **Create codespace on main**.
+3. Trong terminal, chạy:
 
 ```bash
 npm install
 npm run dev
 ```
 
-4. Mở tab **Ports**, tìm port `5173`, chọn **Open in Browser**.
-5. Dùng browser thật có extension ví, ví dụ Chrome/Brave với MetaMask hoặc OKX.
+4. Mở tab **Ports** -> port `5173` -> **Open in Browser**.
+5. Trong app:
+   - chọn ví MetaMask/OKX
+   - bấm **Connect wallet**
+   - bấm **Switch Base Sepolia**
+   - sửa Name, Symbol, Decimals, Supply cap, Initial mint hoặc Salt nếu cần
+   - bấm **Preview address**
+   - bấm **Deploy B20** và ký trong ví
+   - bấm **Mint** nếu muốn mint token ban đầu
 
-Không dùng IDE Simple Browser nếu ví không hiện. Wallet extension thường chỉ inject provider vào browser thật.
+Ví cần có một ít Base Sepolia ETH testnet để trả gas.
 
-## Deploy bằng MetaMask hoặc OKX
-
-1. Cấp Base Sepolia ETH testnet cho ví deploy.
-2. Trong app, chọn ví trong dropdown.
-3. Bấm **Connect wallet**.
-4. Bấm **Switch Base Sepolia**.
-5. Kiểm tra token name, symbol, decimals, supply cap, initial mint và salt.
-6. Bấm **Preview address** để xem địa chỉ token dự kiến.
-7. Bấm **Deploy B20** và ký giao dịch trong ví.
-8. Sau khi deploy xong, bấm **Mint** và ký giao dịch mint.
-9. App sẽ đọc `balanceOf` để xác nhận balance.
+Mở URL bằng Chrome/Brave/Edge có extension ví. Không dùng IDE Simple Browser nếu ví không hiện.
 
 Nếu gặp lỗi token đã tồn tại, đổi giá trị **Salt** rồi preview/deploy lại.
 
