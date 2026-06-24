@@ -18,6 +18,8 @@ These values are only defaults. Change them in the app before deploying.
 
 Change the salt when creating a new token with the same wallet on the same network.
 
+If you already deployed with a wallet and salt, the same address is already used. Mint from the existing token, or change **Salt** before deploying a new token.
+
 ## Quick Start
 
 1. Open `https://github.com/dieutx/base-b20`.

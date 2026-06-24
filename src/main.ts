@@ -20,6 +20,7 @@ import {
   makeSalt,
   parseTokenAmount,
 } from "./b20";
+import { hasDeployedCode } from "./deployedCode";
 import "./styles.css";
 import {
   type DiscoveredWallet,
@@ -78,6 +79,15 @@ function log(message: string): void {
 
 function setText(element: HTMLElement, value?: string): void {
   element.textContent = value && value.length > 0 ? value : "-";
+}
+
+function clearTokenSelection(): void {
+  state.predictedToken = undefined;
+  state.token = undefined;
+  setText(elements.predictedValue);
+  setText(elements.tokenValue);
+  setText(elements.balanceValue);
+  elements.mintToken.disabled = true;
 }
 
 function getSelectedWallet(): DiscoveredWallet {
@@ -264,13 +274,16 @@ async function connectWallet(): Promise<void> {
   state.provider = wallet.provider;
 
   const [account] = await requestAccounts(wallet.provider);
+  if (state.account && state.account.toLowerCase() !== account.toLowerCase()) {
+    clearTokenSelection();
+  }
   state.account = account;
   setText(elements.accountValue, account);
   log(`Connected ${wallet.name}: ${account}`);
   await refreshNetworkStatus();
 }
 
-async function previewTokenAddress(): Promise<Address> {
+async function predictTokenAddress(): Promise<Address> {
   const form = readTokenForm();
   const token = await getPublicClient().readContract({
     address: B20_FACTORY_ADDRESS,
@@ -283,6 +296,26 @@ async function previewTokenAddress(): Promise<Address> {
   setText(elements.predictedValue, token);
   log(`Predicted token address: ${token}`);
   return token;
+}
+
+async function previewTokenAddress(): Promise<Address> {
+  const token = await predictTokenAddress();
+  if (await tokenExists(token)) {
+    useExistingToken(token);
+  }
+  return token;
+}
+
+async function tokenExists(token: Address): Promise<boolean> {
+  const code = await getPublicClient().getCode({ address: token });
+  return hasDeployedCode(code);
+}
+
+function useExistingToken(token: Address): void {
+  state.token = token;
+  setText(elements.tokenValue, token);
+  elements.mintToken.disabled = false;
+  log(`Token already exists at ${token}. Use Mint, or change Salt to deploy a new token.`);
 }
 
 async function estimateContractGasWithBuffer(args: {
@@ -307,7 +340,12 @@ async function deployToken(): Promise<void> {
   await refreshNetworkStatus();
 
   const form = readTokenForm();
-  const predictedToken = state.predictedToken ?? (await previewTokenAddress());
+  const predictedToken = await predictTokenAddress();
+  if (await tokenExists(predictedToken)) {
+    useExistingToken(predictedToken);
+    throw new Error("This wallet and salt already created a B20 token. Use Mint for the existing token, or change Salt to deploy a new one.");
+  }
+
   const walletClient = getWalletClient();
   const deployData = encodeFunctionData({
     abi: B20_FACTORY_ABI,
@@ -410,6 +448,9 @@ function formatActionError(error: unknown): string {
   if (/requested resource not available|too many errors|rpc endpoint/i.test(message)) {
     return `${message}\n\nThis is usually the wallet RPC, not the B20 calldata. Try a Chainstack/Base Sepolia RPC in the RPC URL field, click "Add/Switch Base Sepolia", or update Base Sepolia RPC inside MetaMask/OKX network settings.`;
   }
+  if (/execution reverted|estimate gas/i.test(message)) {
+    return `${message}\n\nIf this happened after a successful deploy, the same wallet and Salt already created this token. Click Preview address to load it, use Mint for that token, or change Salt before deploying a new one.`;
+  }
   return message;
 }
 
@@ -424,7 +465,13 @@ watchWalletProviders((wallets) => {
 bindAction(elements.connectWallet, connectWallet);
 elements.walletSelect.addEventListener("change", () => {
   state.walletManuallySelected = true;
+  state.provider = undefined;
+  state.account = undefined;
+  setText(elements.accountValue);
+  elements.networkStatus.textContent = "Wallet not connected";
+  clearTokenSelection();
 });
+elements.salt.addEventListener("input", clearTokenSelection);
 bindAction(elements.switchNetwork, async () => {
   if (!state.provider) {
     throw new Error("Connect a wallet first.");
