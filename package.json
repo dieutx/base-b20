@@ -1,0 +1,23 @@
+{
+  "name": "base-b20",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc && vite build",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "viem": "^2.45.2"
+  },
+  "overrides": {
+    "esbuild": "^0.28.1",
+    "ws": "^8.20.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vite": "^7.2.7",
+    "vitest": "^4.0.16"
+  }
+}

@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Base B20 Deployer</title>
+  </head>
+  <body>
+    <main id="app" class="shell">
+      <section class="topbar">
+        <div>
+          <p class="eyebrow">Base Sepolia</p>
+          <h1>B20 wallet deployer</h1>
+        </div>
+        <div class="status-pill" id="networkStatus">Wallet not connected</div>
+      </section>
+
+      <section class="layout">
+        <form id="tokenForm" class="panel">
+          <div class="panel-heading">
+            <h2>Token setup</h2>
+            <button id="connectWallet" type="button">Connect wallet</button>
+          </div>
+
+          <label>
+            Wallet
+            <select id="walletSelect"></select>
+          </label>
+
+          <div class="grid-two">
+            <label>
+              Name
+              <input id="tokenName" autocomplete="off" value="DieuTX B20" />
+            </label>
+            <label>
+              Symbol
+              <input id="tokenSymbol" autocomplete="off" value="DIEUTX" />
+            </label>
+          </div>
+
+          <div class="grid-three">
+            <label>
+              Decimals
+              <input id="tokenDecimals" type="number" min="6" max="18" value="18" />
+            </label>
+            <label>
+              Supply cap
+              <input id="supplyCap" inputmode="decimal" value="1000000" />
+            </label>
+            <label>
+              Initial mint
+              <input id="mintAmount" inputmode="decimal" value="1000" />
+            </label>
+          </div>
+
+          <label>
+            Salt
+            <input id="salt" autocomplete="off" value="dieutx-b20-v1" />
+          </label>
+
+          <div class="actions">
+            <button id="switchNetwork" type="button">Switch Base Sepolia</button>
+            <button id="previewAddress" type="button">Preview address</button>
+            <button id="deployToken" type="button">Deploy B20</button>
+          </div>
+        </form>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Run state</h2>
+            <button id="mintToken" type="button" disabled>Mint</button>
+          </div>
+
+          <dl class="facts">
+            <div>
+              <dt>Account</dt>
+              <dd id="accountValue">-</dd>
+            </div>
+            <div>
+              <dt>Predicted token</dt>
+              <dd id="predictedValue">-</dd>
+            </div>
+            <div>
+              <dt>Token address</dt>
+              <dd id="tokenValue">-</dd>
+            </div>
+            <div>
+              <dt>Balance</dt>
+              <dd id="balanceValue">-</dd>
+            </div>
+          </dl>
+
+          <pre id="log" class="log">Open this forwarded Codespaces URL in a browser with MetaMask, OKX, or another injected wallet.</pre>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
