@@ -1,6 +1,6 @@
 import { describe, expect, test, vi } from "vitest";
 
-import { type Eip1193Provider, watchWalletProviders } from "./wallets";
+import { type DiscoveredWallet, type Eip1193Provider, sortWallets, watchWalletProviders } from "./wallets";
 
 class WalletTarget extends EventTarget {
   ethereum?: Eip1193Provider;
@@ -11,6 +11,20 @@ const provider = (id: string): Eip1193Provider => ({
 });
 
 describe("wallet discovery", () => {
+  test("prioritizes MetaMask as the default wallet", () => {
+    const wallets: DiscoveredWallet[] = [
+      { id: "okx", name: "OKX Wallet", provider: provider("okx"), rdns: "com.okex.wallet" },
+      { id: "metamask", name: "MetaMask", provider: provider("metamask"), rdns: "io.metamask" },
+      { id: "coinbase", name: "Coinbase Wallet", provider: provider("coinbase"), rdns: "com.coinbase.wallet" },
+    ];
+
+    expect(sortWallets(wallets).map((wallet) => wallet.name)).toEqual([
+      "MetaMask",
+      "Coinbase Wallet",
+      "OKX Wallet",
+    ]);
+  });
+
   test("collects wallets announced through EIP-6963", () => {
     const target = new WalletTarget();
     const updates: string[][] = [];

@@ -32,6 +32,24 @@ export type WalletDiscoveryOptions = {
   fallbackDelayMs?: number;
 };
 
+function walletRank(wallet: DiscoveredWallet): number {
+  const identity = `${wallet.name} ${wallet.rdns ?? ""}`.toLowerCase();
+  if (identity.includes("metamask")) {
+    return 0;
+  }
+  return 1;
+}
+
+export function sortWallets(wallets: DiscoveredWallet[]): DiscoveredWallet[] {
+  return [...wallets].sort((left, right) => {
+    const rankDiff = walletRank(left) - walletRank(right);
+    if (rankDiff !== 0) {
+      return rankDiff;
+    }
+    return left.name.localeCompare(right.name);
+  });
+}
+
 export function watchWalletProviders(
   onUpdate: (wallets: DiscoveredWallet[]) => void,
   target: WalletTarget = window,
@@ -41,7 +59,7 @@ export function watchWalletProviders(
   const wallets = new Map<string, DiscoveredWallet>();
 
   const emit = () => {
-    onUpdate([...wallets.values()]);
+    onUpdate(sortWallets([...wallets.values()]));
   };
 
   const addWallet = (wallet: DiscoveredWallet) => {

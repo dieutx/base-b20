@@ -1,8 +1,10 @@
 import {
   type Address,
+  type Hex,
   createPublicClient,
   createWalletClient,
   custom,
+  encodeFunctionData,
   formatUnits,
   http,
 } from "viem";
@@ -26,12 +28,6 @@ import {
 } from "./wallets";
 
 const BASE_SEPOLIA_CHAIN_HEX = "0x14a34";
-const BASE_SEPOLIA_RPC_URL = "https://sepolia.base.org";
-
-const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http(BASE_SEPOLIA_RPC_URL),
-});
 
 const state: {
   wallets: DiscoveredWallet[];
@@ -39,8 +35,10 @@ const state: {
   account?: Address;
   predictedToken?: Address;
   token?: Address;
+  walletManuallySelected: boolean;
 } = {
   wallets: [],
+  walletManuallySelected: false,
 };
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -65,6 +63,7 @@ const elements = {
   supplyCap: $<HTMLInputElement>("supplyCap"),
   mintAmount: $<HTMLInputElement>("mintAmount"),
   salt: $<HTMLInputElement>("salt"),
+  rpcUrl: $<HTMLInputElement>("rpcUrl"),
   connectWallet: $<HTMLButtonElement>("connectWallet"),
   switchNetwork: $<HTMLButtonElement>("switchNetwork"),
   previewAddress: $<HTMLButtonElement>("previewAddress"),
@@ -91,6 +90,21 @@ function getSelectedWallet(): DiscoveredWallet {
 
 function getDecimals(): number {
   return Number.parseInt(elements.tokenDecimals.value, 10);
+}
+
+function getRpcUrl(): string {
+  const rpcUrl = elements.rpcUrl.value.trim();
+  if (!/^https?:\/\/\S+$/i.test(rpcUrl)) {
+    throw new Error("RPC URL must start with http:// or https://.");
+  }
+  return rpcUrl;
+}
+
+function getPublicClient() {
+  return createPublicClient({
+    chain: baseSepolia,
+    transport: http(getRpcUrl()),
+  });
 }
 
 function getWalletClient() {
@@ -120,15 +134,43 @@ async function getChainId(provider: Eip1193Provider): Promise<string> {
   return chainId;
 }
 
+function getErrorCode(error: unknown): number | undefined {
+  return typeof error === "object" && error !== null && "code" in error ? Number(error.code) : undefined;
+}
+
 async function switchToBaseSepolia(provider: Eip1193Provider): Promise<void> {
+  const rpcUrl = getRpcUrl();
+  try {
+    await provider.request({
+      method: "wallet_addEthereumChain",
+      params: [
+        {
+          chainId: BASE_SEPOLIA_CHAIN_HEX,
+          chainName: "Base Sepolia",
+          nativeCurrency: {
+            name: "Sepolia Ether",
+            symbol: "ETH",
+            decimals: 18,
+          },
+          rpcUrls: [rpcUrl],
+          blockExplorerUrls: ["https://sepolia.basescan.org"],
+        },
+      ],
+    });
+  } catch (error) {
+    if (getErrorCode(error) === 4001) {
+      throw error;
+    }
+    log("Wallet did not add/update the RPC automatically. If deploy still fails, update Base Sepolia RPC in the wallet settings.");
+  }
+
   try {
     await provider.request({
       method: "wallet_switchEthereumChain",
       params: [{ chainId: BASE_SEPOLIA_CHAIN_HEX }],
     });
   } catch (error) {
-    const code = typeof error === "object" && error !== null && "code" in error ? Number(error.code) : undefined;
-    if (code !== 4902) {
+    if (getErrorCode(error) !== 4902) {
       throw error;
     }
 
@@ -143,7 +185,7 @@ async function switchToBaseSepolia(provider: Eip1193Provider): Promise<void> {
             symbol: "ETH",
             decimals: 18,
           },
-          rpcUrls: [BASE_SEPOLIA_RPC_URL],
+          rpcUrls: [rpcUrl],
           blockExplorerUrls: ["https://sepolia.basescan.org"],
         },
       ],
@@ -162,8 +204,10 @@ function updateWalletOptions(wallets: DiscoveredWallet[]): void {
     }),
   );
 
-  if (wallets.some((wallet) => wallet.id === previous)) {
+  if (state.walletManuallySelected && wallets.some((wallet) => wallet.id === previous)) {
     elements.walletSelect.value = previous;
+  } else if (wallets.length > 0) {
+    elements.walletSelect.value = wallets[0].id;
   }
 }
 
@@ -176,6 +220,13 @@ async function refreshNetworkStatus(): Promise<void> {
   const chainId = await getChainId(state.provider);
   elements.networkStatus.textContent =
     chainId.toLowerCase() === BASE_SEPOLIA_CHAIN_HEX ? "Connected to Base Sepolia" : `Wrong network: ${chainId}`;
+}
+
+async function ensureBaseSepolia(provider: Eip1193Provider): Promise<void> {
+  const chainId = await getChainId(provider);
+  if (chainId.toLowerCase() !== BASE_SEPOLIA_CHAIN_HEX) {
+    throw new Error('Click "Add/Switch Base Sepolia" and approve the wallet network prompt before deploying.');
+  }
 }
 
 function readTokenForm() {
@@ -221,7 +272,7 @@ async function connectWallet(): Promise<void> {
 
 async function previewTokenAddress(): Promise<Address> {
   const form = readTokenForm();
-  const token = await publicClient.readContract({
+  const token = await getPublicClient().readContract({
     address: B20_FACTORY_ADDRESS,
     abi: B20_FACTORY_ABI,
     functionName: "getB20Address",
@@ -234,17 +285,40 @@ async function previewTokenAddress(): Promise<Address> {
   return token;
 }
 
+async function estimateContractGasWithBuffer(args: {
+  account: Address;
+  to: Address;
+  data: Hex;
+}): Promise<bigint> {
+  const gas = await getPublicClient().estimateGas({
+    account: args.account,
+    to: args.to,
+    data: args.data,
+  });
+  return (gas * 120n) / 100n;
+}
+
 async function deployToken(): Promise<void> {
   if (!state.provider) {
     throw new Error("Connect a wallet first.");
   }
 
-  await switchToBaseSepolia(state.provider);
+  await ensureBaseSepolia(state.provider);
   await refreshNetworkStatus();
 
   const form = readTokenForm();
   const predictedToken = state.predictedToken ?? (await previewTokenAddress());
   const walletClient = getWalletClient();
+  const deployData = encodeFunctionData({
+    abi: B20_FACTORY_ABI,
+    functionName: "createB20",
+    args: [B20_ASSET_VARIANT, form.salt, form.params, form.initCalls],
+  });
+  const gas = await estimateContractGasWithBuffer({
+    account: form.account,
+    to: B20_FACTORY_ADDRESS,
+    data: deployData,
+  });
 
   log("Waiting for wallet signature to create B20 token...");
   const hash = await walletClient.writeContract({
@@ -254,10 +328,11 @@ async function deployToken(): Promise<void> {
     args: [B20_ASSET_VARIANT, form.salt, form.params, form.initCalls],
     account: form.account,
     chain: baseSepolia,
+    gas,
   });
 
   log(`Deploy transaction sent: ${hash}`);
-  await publicClient.waitForTransactionReceipt({ hash });
+  await getPublicClient().waitForTransactionReceipt({ hash });
 
   state.token = predictedToken;
   setText(elements.tokenValue, predictedToken);
@@ -269,6 +344,9 @@ async function mintToken(): Promise<void> {
   if (!state.token || !state.account) {
     throw new Error("Deploy a token first.");
   }
+  if (state.provider) {
+    await ensureBaseSepolia(state.provider);
+  }
 
   const walletClient = getWalletClient();
   const decimals = getDecimals();
@@ -276,6 +354,16 @@ async function mintToken(): Promise<void> {
   if (amount <= 0n) {
     throw new Error("Mint amount must be greater than zero.");
   }
+  const mintData = encodeFunctionData({
+    abi: B20_TOKEN_ABI,
+    functionName: "mint",
+    args: [state.account, amount],
+  });
+  const gas = await estimateContractGasWithBuffer({
+    account: state.account,
+    to: state.token,
+    data: mintData,
+  });
 
   log("Waiting for wallet signature to mint...");
   const hash = await walletClient.writeContract({
@@ -285,12 +373,13 @@ async function mintToken(): Promise<void> {
     args: [state.account, amount],
     account: state.account,
     chain: baseSepolia,
+    gas,
   });
 
   log(`Mint transaction sent: ${hash}`);
-  await publicClient.waitForTransactionReceipt({ hash });
+  await getPublicClient().waitForTransactionReceipt({ hash });
 
-  const balance = await publicClient.readContract({
+  const balance = await getPublicClient().readContract({
     address: state.token,
     abi: B20_TOKEN_ABI,
     functionName: "balanceOf",
@@ -305,8 +394,7 @@ function bindAction(button: HTMLButtonElement, action: () => Promise<void>): voi
     button.disabled = true;
     action()
       .catch((error: unknown) => {
-        const message = error instanceof Error ? error.message : String(error);
-        log(`Error: ${message}`);
+        log(`Error: ${formatActionError(error)}`);
       })
       .finally(() => {
         button.disabled = false;
@@ -315,6 +403,14 @@ function bindAction(button: HTMLButtonElement, action: () => Promise<void>): voi
         }
       });
   });
+}
+
+function formatActionError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/requested resource not available|too many errors|rpc endpoint/i.test(message)) {
+    return `${message}\n\nThis is usually the wallet RPC, not the B20 calldata. Try a Chainstack/Base Sepolia RPC in the RPC URL field, click "Add/Switch Base Sepolia", or update Base Sepolia RPC inside MetaMask/OKX network settings.`;
+  }
+  return message;
 }
 
 watchWalletProviders((wallets) => {
@@ -326,13 +422,16 @@ watchWalletProviders((wallets) => {
 });
 
 bindAction(elements.connectWallet, connectWallet);
+elements.walletSelect.addEventListener("change", () => {
+  state.walletManuallySelected = true;
+});
 bindAction(elements.switchNetwork, async () => {
   if (!state.provider) {
     throw new Error("Connect a wallet first.");
   }
   await switchToBaseSepolia(state.provider);
   await refreshNetworkStatus();
-  log("Base Sepolia selected.");
+  log("Base Sepolia selected. If deploy still shows RPC errors, update the Base Sepolia RPC in wallet network settings.");
 });
 bindAction(elements.previewAddress, async () => {
   await previewTokenAddress();
