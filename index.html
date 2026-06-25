@@ -29,7 +29,7 @@
         </div>
         <div id="stepMemo" class="workflow-step" data-state="blocked">
           <span>3</span>
-          <strong>Memo payment</strong>
+          <strong>Memo transfer</strong>
         </div>
         <div id="stepReceipt" class="workflow-step" data-state="blocked">
           <span>4</span>
@@ -88,31 +88,44 @@
 
             <div class="subpanel">
               <div class="subpanel-heading">
-                <h3>Testnet issuance</h3>
-                <button id="mintToken" type="button" disabled>Mint to wallet</button>
+                <h3>Mint with memo</h3>
+                <button id="mintToken" type="button" disabled>Mint with memo</button>
               </div>
-              <label>
-                Mint amount
-                <input id="mintAmount" inputmode="decimal" value="1000" />
-              </label>
+              <div class="grid-two">
+                <label>
+                  Mint amount
+                  <input id="mintAmount" inputmode="decimal" value="1000" />
+                </label>
+                <label>
+                  Issuance reference
+                  <input id="issuanceReference" autocomplete="off" value="issuance-1" />
+                </label>
+              </div>
+              <dl class="facts compact">
+                <div>
+                  <dt>Mint memo</dt>
+                  <dd id="issuanceMemoValue">-</dd>
+                </div>
+                <div>
+                  <dt>Payload</dt>
+                  <dd id="issuancePayloadValue">-</dd>
+                </div>
+              </dl>
             </div>
           </form>
 
           <section class="panel">
             <div class="panel-heading">
-              <h2>Payment intent</h2>
-              <button id="sendMemoPayment" type="button">Transfer with memo</button>
+              <h2>Transfer / redeem</h2>
+              <button id="sendMemoPayment" type="button">Send with memo</button>
             </div>
 
             <div class="grid-two">
               <label>
-                Memo namespace
+                Operation
                 <select id="memoNamespace">
                   <option value="PAYMENT">PAYMENT</option>
-                  <option value="MINT">MINT</option>
                   <option value="REDEEM">REDEEM</option>
-                  <option value="BURN">BURN</option>
-                  <option value="POLICY">POLICY</option>
                 </select>
               </label>
               <label>
@@ -232,6 +245,27 @@
               <span>Policy changes: CLI guard</span>
               <span>Pause controls: runbook</span>
               <span>Freeze/seize: case workflow</span>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Guarded workflows</h2>
+            </div>
+
+            <div class="workflow-list">
+              <div>
+                <strong>Burn with memo</strong>
+                <span>BURN memo is for redemption/operator workflows. Use CLI/runbook with burner role and approval.</span>
+              </div>
+              <div>
+                <strong>Policy case memo</strong>
+                <span>POLICY memo is for offchain case references. No public policy mutation buttons are exposed.</span>
+              </div>
+              <div>
+                <strong>Freeze and seize</strong>
+                <span>Requires case review, sender policy block, dual approval, and guarded burnBlocked execution.</span>
+              </div>
             </div>
           </section>
         </section>

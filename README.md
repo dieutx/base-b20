@@ -42,22 +42,37 @@ npm run dev
    - edit token fields if needed
    - click **Preview**
    - click **Deploy B20** and sign in the wallet
-   - click **Mint to wallet** if you want the testnet mint
+   - click **Mint with memo** if you want a testnet issuance
    - use **Token workspace** to load an existing B20 token
-   - use **Payment intent** to preview a namespaced `bytes32` memo or send `transferWithMemo`
+   - use **Transfer / redeem** to preview a `PAYMENT` or `REDEEM` memo and send `transferWithMemo`
    - use **Governance snapshot** to read connected roles, policy IDs, and paused features
    - use **Receipt reconciliation** to verify adjacent Transfer/Memo event pairing
 
 Your wallet needs Base Sepolia ETH for gas.
+
+## Test Flow
+
+Use this flow to test the app end to end on Base Sepolia:
+
+1. **Connect wallet**: open the forwarded Codespaces URL in a normal browser with MetaMask, then connect.
+2. **Switch network**: click **Base Sepolia** and approve the wallet prompt.
+3. **Deploy or load token**: click **Preview**, then **Deploy B20**. If the token already exists, load it from **Token workspace**.
+4. **Mint with memo**: set **Mint amount** and **Issuance reference**, then click **Mint with memo**. This calls `mintWithMemo` with a `MINT:v1:<reference>` memo hash.
+5. **Transfer payment**: choose `PAYMENT`, enter recipient and amount, click **Preview memo**, then **Send with memo**. This calls `transferWithMemo`.
+6. **Test redemption transfer**: choose `REDEEM` instead of `PAYMENT`, enter a redemption wallet address, then send with memo. This is a transfer-to-redemption flow, not a burn.
+7. **Reconcile receipt**: after a transaction confirms, keep or paste the tx hash in **Receipt reconciliation** and click **Check receipt**. The checker pairs each `Memo` only with the immediately previous `Transfer`.
+8. **Read governance state**: click **Refresh** in **Governance snapshot** to inspect roles, policy IDs, and paused features.
+
+`BURN` and `POLICY` memos are visible as guarded workflows only. The browser UI does not expose burn, policy mutation, pause, or freeze/seize buttons.
 
 ## Safe UI Scope
 
 The browser app opens as a realistic Sepolia test console. It exposes safe user/operator actions only:
 
 - deploy Asset B20 on Base Sepolia
-- mint from the connected minter wallet for testnet/dev use
+- mint with `MINT` memo from the connected minter wallet for testnet/dev use
 - inspect token identity, supply, cap, variant, roles, policies, and pause state
-- send `transferWithMemo`
+- send `transferWithMemo` for `PAYMENT` and `REDEEM` transfer flows
 - reconcile a receipt by matching each `Memo` with the immediately previous `Transfer`
 
 It intentionally does not expose public buttons for role grants, policy attach/update, pause/unpause, admin renounce, or `burnBlocked`. Those are sensitive governance operations and belong in protected CLI/runbook flows under `docs/b20/`.

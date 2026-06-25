@@ -293,6 +293,31 @@ select {
   padding: 4px 0 4px 9px;
 }
 
+.workflow-list {
+  display: grid;
+  gap: 10px;
+}
+
+.workflow-list div {
+  display: grid;
+  gap: 5px;
+  border: 1px solid #edf1ee;
+  border-radius: 6px;
+  background: #fbfcfb;
+  padding: 10px;
+}
+
+.workflow-list strong {
+  color: #16201d;
+  font-size: 0.9rem;
+}
+
+.workflow-list span {
+  color: #5b6f67;
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .log {
   min-height: 220px;
   max-height: 320px;

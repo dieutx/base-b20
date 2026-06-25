@@ -1,6 +1,13 @@
 import { describe, expect, test } from "vitest";
 
-import { deriveWorkflowSteps, formatPausedFeatures, formatPolicySummary, formatRoleSummary } from "./uiSafe.ts";
+import {
+  deriveWorkflowSteps,
+  formatPausedFeatures,
+  formatPolicySummary,
+  formatRoleSummary,
+  getUiMemoNamespaces,
+  isTransferMemoNamespace,
+} from "./uiSafe.ts";
 
 describe("safe B20 UI summaries", () => {
   test("formats connected roles without exposing admin write actions", () => {
@@ -40,5 +47,13 @@ describe("safe B20 UI summaries", () => {
         receiptChecked: false,
       }).map((step) => step.state),
     ).toEqual(["done", "done", "done", "current"]);
+  });
+
+  test("keeps memo namespaces aligned with the UI operation that can execute them", () => {
+    expect(getUiMemoNamespaces("transfer")).toEqual(["PAYMENT", "REDEEM"]);
+    expect(getUiMemoNamespaces("mint")).toEqual(["MINT"]);
+    expect(getUiMemoNamespaces("guarded")).toEqual(["BURN", "POLICY"]);
+    expect(isTransferMemoNamespace("PAYMENT")).toBe(true);
+    expect(isTransferMemoNamespace("MINT")).toBe(false);
   });
 });

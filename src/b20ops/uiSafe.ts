@@ -45,7 +45,7 @@ export function deriveWorkflowSteps(input: WorkflowInput): WorkflowStep[] {
   const labels = [
     ["wallet", "Wallet"],
     ["token", "Token"],
-    ["memo", "Memo payment"],
+    ["memo", "Memo transfer"],
     ["receipt", "Reconcile"],
   ] as const;
   const firstIncomplete = states.findIndex((done) => !done);
@@ -55,4 +55,21 @@ export function deriveWorkflowSteps(input: WorkflowInput): WorkflowStep[] {
     label,
     state: states[index] ? "done" : index === firstIncomplete ? "current" : "blocked",
   }));
+}
+
+export type UiMemoOperation = "transfer" | "mint" | "guarded";
+
+const UI_MEMO_NAMESPACES = {
+  transfer: ["PAYMENT", "REDEEM"],
+  mint: ["MINT"],
+  guarded: ["BURN", "POLICY"],
+} as const satisfies Record<UiMemoOperation, readonly string[]>;
+
+export function getUiMemoNamespaces(operation: UiMemoOperation): readonly string[] {
+  return UI_MEMO_NAMESPACES[operation];
+}
+
+export function isTransferMemoNamespace(namespace: string): boolean {
+  const normalized = namespace.toUpperCase();
+  return UI_MEMO_NAMESPACES.transfer.some((allowed) => allowed === normalized);
 }

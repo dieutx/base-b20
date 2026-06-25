@@ -15,7 +15,6 @@ import {
   B20_ASSET_VARIANT,
   B20_FACTORY_ABI,
   B20_FACTORY_ADDRESS,
-  B20_TOKEN_ABI,
   buildAssetInitCalls,
   encodeAssetCreateParams,
   makeSalt,
@@ -25,7 +24,13 @@ import { B20_ABI as B20_FULL_ABI } from "./b20ops/abi";
 import { B20_POLICY_SCOPES, B20_ROLES } from "./b20ops/constants";
 import { createMemo, type MemoRecord } from "./b20ops/memo";
 import { pairMemoTransfers, validatePaymentPair, type B20RawLog } from "./b20ops/reconciliation";
-import { deriveWorkflowSteps, formatPausedFeatures, formatPolicySummary, formatRoleSummary } from "./b20ops/uiSafe";
+import {
+  deriveWorkflowSteps,
+  formatPausedFeatures,
+  formatPolicySummary,
+  formatRoleSummary,
+  isTransferMemoNamespace,
+} from "./b20ops/uiSafe";
 import { hasDeployedCode } from "./deployedCode";
 import "./styles.css";
 import {
@@ -74,6 +79,9 @@ const elements = {
   tokenDecimals: $<HTMLInputElement>("tokenDecimals"),
   supplyCap: $<HTMLInputElement>("supplyCap"),
   mintAmount: $<HTMLInputElement>("mintAmount"),
+  issuanceReference: $<HTMLInputElement>("issuanceReference"),
+  issuanceMemoValue: $("issuanceMemoValue"),
+  issuancePayloadValue: $("issuancePayloadValue"),
   salt: $<HTMLInputElement>("salt"),
   rpcUrl: $<HTMLInputElement>("rpcUrl"),
   connectWallet: $<HTMLButtonElement>("connectWallet"),
@@ -141,6 +149,8 @@ function clearTokenSelection(): void {
   setText(elements.pausedValue);
   setText(elements.memoValue);
   setText(elements.memoPayloadValue);
+  setText(elements.issuanceMemoValue);
+  setText(elements.issuancePayloadValue);
   setText(elements.intentStatusValue, "draft");
   elements.receiptValue.textContent = "-";
   elements.mintToken.disabled = true;
@@ -172,6 +182,11 @@ function resetPaymentDraft(): void {
   setText(elements.intentStatusValue, "draft");
   elements.receiptValue.textContent = "-";
   updateWorkflow();
+}
+
+function resetIssuanceMemo(): void {
+  setText(elements.issuanceMemoValue);
+  setText(elements.issuancePayloadValue);
 }
 
 function getSelectedWallet(): DiscoveredWallet {
@@ -555,10 +570,16 @@ async function mintToken(): Promise<void> {
   if (amount <= 0n) {
     throw new Error("Mint amount must be greater than zero.");
   }
+  const issuanceMemo = createMemo({
+    namespace: "MINT",
+    reference: elements.issuanceReference.value,
+  });
+  setText(elements.issuanceMemoValue, issuanceMemo.memoBytes32);
+  setText(elements.issuancePayloadValue, issuanceMemo.canonicalPayload);
   const mintData = encodeFunctionData({
-    abi: B20_TOKEN_ABI,
-    functionName: "mint",
-    args: [state.account, amount],
+    abi: B20_FULL_ABI,
+    functionName: "mintWithMemo",
+    args: [state.account, amount, issuanceMemo.memoBytes32],
   });
   const gas = await estimateContractGasWithBuffer({
     account: state.account,
@@ -566,12 +587,12 @@ async function mintToken(): Promise<void> {
     data: mintData,
   });
 
-  log("Waiting for wallet signature to mint...");
+  log("Waiting for wallet signature to mint with memo...");
   const hash = await walletClient.writeContract({
     address: state.token,
-    abi: B20_TOKEN_ABI,
-    functionName: "mint",
-    args: [state.account, amount],
+    abi: B20_FULL_ABI,
+    functionName: "mintWithMemo",
+    args: [state.account, amount, issuanceMemo.memoBytes32],
     account: state.account,
     chain: baseSepolia,
     gas,
@@ -582,15 +603,18 @@ async function mintToken(): Promise<void> {
 
   const balance = await getPublicClient().readContract({
     address: state.token,
-    abi: B20_TOKEN_ABI,
+    abi: B20_FULL_ABI,
     functionName: "balanceOf",
     args: [state.account],
   });
   setText(elements.balanceValue, `${formatUnits(balance, decimals)} ${getActiveSymbol()}`);
-  log(`Mint confirmed. Balance: ${formatUnits(balance, decimals)}`);
+  log(`Mint with memo confirmed. Balance: ${formatUnits(balance, decimals)}`);
 }
 
 function buildMemoPreview(): MemoRecord {
+  if (!isTransferMemoNamespace(elements.memoNamespace.value)) {
+    throw new Error("Transfer/redeem can only use PAYMENT or REDEEM memo namespaces in this UI.");
+  }
   const memo = createMemo({
     namespace: elements.memoNamespace.value,
     reference: elements.memoReference.value,
@@ -842,6 +866,8 @@ elements.walletSelect.addEventListener("change", () => {
   updateWorkflow();
 });
 elements.salt.addEventListener("input", clearTokenSelection);
+elements.mintAmount.addEventListener("input", resetIssuanceMemo);
+elements.issuanceReference.addEventListener("input", resetIssuanceMemo);
 bindAction(elements.switchNetwork, async () => {
   if (!state.provider) {
     throw new Error("Connect a wallet first.");
