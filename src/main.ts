@@ -25,7 +25,7 @@ import { B20_ABI as B20_FULL_ABI } from "./b20ops/abi";
 import { B20_POLICY_SCOPES, B20_ROLES } from "./b20ops/constants";
 import { createMemo, type MemoRecord } from "./b20ops/memo";
 import { pairMemoTransfers, validatePaymentPair, type B20RawLog } from "./b20ops/reconciliation";
-import { formatPausedFeatures, formatPolicySummary, formatRoleSummary } from "./b20ops/uiSafe";
+import { deriveWorkflowSteps, formatPausedFeatures, formatPolicySummary, formatRoleSummary } from "./b20ops/uiSafe";
 import { hasDeployedCode } from "./deployedCode";
 import "./styles.css";
 import {
@@ -45,9 +45,11 @@ const state: {
   tokenDecimals?: number;
   tokenSymbol?: string;
   memo?: MemoRecord;
+  receiptChecked: boolean;
   walletManuallySelected: boolean;
 } = {
   wallets: [],
+  receiptChecked: false,
   walletManuallySelected: false,
 };
 
@@ -89,6 +91,7 @@ const elements = {
   memoNamespace: $<HTMLSelectElement>("memoNamespace"),
   memoReference: $<HTMLInputElement>("memoReference"),
   paymentRecipient: $<HTMLInputElement>("paymentRecipient"),
+  useSelfRecipient: $<HTMLButtonElement>("useSelfRecipient"),
   paymentAmount: $<HTMLInputElement>("paymentAmount"),
   previewMemo: $<HTMLButtonElement>("previewMemo"),
   sendMemoPayment: $<HTMLButtonElement>("sendMemoPayment"),
@@ -101,11 +104,17 @@ const elements = {
   receiptHash: $<HTMLInputElement>("receiptHash"),
   reconcileReceipt: $<HTMLButtonElement>("reconcileReceipt"),
   receiptValue: $("receiptValue"),
+  intentStatusValue: $("intentStatusValue"),
+  stepWallet: $("stepWallet"),
+  stepToken: $("stepToken"),
+  stepMemo: $("stepMemo"),
+  stepReceipt: $("stepReceipt"),
 };
 
 function log(message: string): void {
   const timestamp = new Date().toLocaleTimeString();
-  elements.log.textContent = `[${timestamp}] ${message}\n${elements.log.textContent ?? ""}`;
+  const previous = elements.log.textContent === "No activity yet." ? "" : (elements.log.textContent ?? "");
+  elements.log.textContent = `[${timestamp}] ${message}\n${previous}`;
 }
 
 function setText(element: HTMLElement, value?: string): void {
@@ -118,6 +127,7 @@ function clearTokenSelection(): void {
   state.tokenDecimals = undefined;
   state.tokenSymbol = undefined;
   state.memo = undefined;
+  state.receiptChecked = false;
   setText(elements.predictedValue);
   setText(elements.tokenValue);
   setText(elements.balanceValue);
@@ -131,8 +141,37 @@ function clearTokenSelection(): void {
   setText(elements.pausedValue);
   setText(elements.memoValue);
   setText(elements.memoPayloadValue);
+  setText(elements.intentStatusValue, "draft");
   elements.receiptValue.textContent = "-";
   elements.mintToken.disabled = true;
+  updateWorkflow();
+}
+
+function updateWorkflow(): void {
+  const stepElements = {
+    wallet: elements.stepWallet,
+    token: elements.stepToken,
+    memo: elements.stepMemo,
+    receipt: elements.stepReceipt,
+  };
+  for (const step of deriveWorkflowSteps({
+    walletConnected: Boolean(state.account),
+    tokenLoaded: Boolean(state.token),
+    memoReady: Boolean(state.memo),
+    receiptChecked: state.receiptChecked,
+  })) {
+    stepElements[step.key].dataset.state = step.state;
+  }
+}
+
+function resetPaymentDraft(): void {
+  state.memo = undefined;
+  state.receiptChecked = false;
+  setText(elements.memoValue);
+  setText(elements.memoPayloadValue);
+  setText(elements.intentStatusValue, "draft");
+  elements.receiptValue.textContent = "-";
+  updateWorkflow();
 }
 
 function getSelectedWallet(): DiscoveredWallet {
@@ -334,6 +373,7 @@ async function connectWallet(): Promise<void> {
   setText(elements.accountValue, account);
   log(`Connected ${wallet.name}: ${account}`);
   await refreshNetworkStatus();
+  updateWorkflow();
 }
 
 async function predictTokenAddress(): Promise<Address> {
@@ -371,6 +411,7 @@ function useExistingToken(token: Address): void {
   setText(elements.tokenValue, token);
   elements.mintToken.disabled = false;
   log(`Token already exists at ${token}. Use Mint, or change Salt to deploy a new token.`);
+  updateWorkflow();
 }
 
 function getTokenToLoad(): Address {
@@ -419,6 +460,7 @@ async function loadTokenDetails(token: Address = getTokenToLoad()): Promise<void
   setText(elements.contractUriValue, String(contractURI));
   await refreshLoadedBalance();
   log(`Loaded B20 token ${tokenSymbol} at ${token}`);
+  updateWorkflow();
 }
 
 async function refreshLoadedBalance(): Promise<void> {
@@ -554,8 +596,11 @@ function buildMemoPreview(): MemoRecord {
     reference: elements.memoReference.value,
   });
   state.memo = memo;
+  state.receiptChecked = false;
   setText(elements.memoValue, memo.memoBytes32);
   setText(elements.memoPayloadValue, memo.canonicalPayload);
+  setText(elements.intentStatusValue, "memo ready");
+  updateWorkflow();
   return memo;
 }
 
@@ -611,9 +656,11 @@ async function sendMemoPayment(): Promise<void> {
   });
 
   log(`Memo payment transaction sent: ${hash}`);
+  setText(elements.intentStatusValue, "confirming");
   const receipt = await getPublicClient().waitForTransactionReceipt({ hash });
   elements.receiptHash.value = receipt.transactionHash;
   await refreshLoadedBalance();
+  setText(elements.intentStatusValue, "confirmed");
   log(`Memo payment confirmed in block ${receipt.blockNumber.toString()}.`);
 }
 
@@ -696,8 +743,11 @@ async function reconcileReceipt(): Promise<void> {
     data: entry.data,
   }));
   const pairs = pairMemoTransfers(logs);
+  state.receiptChecked = true;
+  updateWorkflow();
   if (pairs.length === 0) {
     elements.receiptValue.textContent = "No adjacent B20 Transfer/Memo pairs found.";
+    setText(elements.intentStatusValue, "receipt checked");
     return;
   }
 
@@ -721,6 +771,7 @@ async function reconcileReceipt(): Promise<void> {
       return `${baseLine}\nvalidation: ${validation.ok ? "ok" : validation.reason}`;
     })
     .join("\n\n");
+  setText(elements.intentStatusValue, "reconciled");
   log(`Receipt check found ${pairs.length} adjacent Transfer/Memo pair${pairs.length === 1 ? "" : "s"}.`);
 }
 
@@ -788,6 +839,7 @@ elements.walletSelect.addEventListener("change", () => {
   setText(elements.accountValue);
   elements.networkStatus.textContent = "Wallet not connected";
   clearTokenSelection();
+  updateWorkflow();
 });
 elements.salt.addEventListener("input", clearTokenSelection);
 bindAction(elements.switchNetwork, async () => {
@@ -810,3 +862,17 @@ bindAction(elements.previewMemo, previewMemo);
 bindAction(elements.sendMemoPayment, sendMemoPayment);
 bindAction(elements.refreshStatus, refreshStatus);
 bindAction(elements.reconcileReceipt, reconcileReceipt);
+elements.useSelfRecipient.addEventListener("click", () => {
+  if (!state.account) {
+    log("Error: Connect a wallet first.");
+    return;
+  }
+  elements.paymentRecipient.value = state.account;
+  resetPaymentDraft();
+  log("Payment recipient set to the connected wallet.");
+});
+elements.memoNamespace.addEventListener("change", resetPaymentDraft);
+for (const input of [elements.memoReference, elements.paymentRecipient, elements.paymentAmount]) {
+  input.addEventListener("input", resetPaymentDraft);
+}
+updateWorkflow();

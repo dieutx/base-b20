@@ -21,3 +21,38 @@ export function formatPausedFeatures(features: readonly (number | bigint)[]): st
     .map((feature) => PAUSED_FEATURE_LABELS.get(feature) ?? `FEATURE_${feature}`)
     .join(", ");
 }
+
+export type WorkflowInput = {
+  walletConnected: boolean;
+  tokenLoaded: boolean;
+  memoReady: boolean;
+  receiptChecked: boolean;
+};
+
+export type WorkflowStep = {
+  key: "wallet" | "token" | "memo" | "receipt";
+  label: string;
+  state: "done" | "current" | "blocked";
+};
+
+export function deriveWorkflowSteps(input: WorkflowInput): WorkflowStep[] {
+  const states = [
+    input.walletConnected,
+    input.tokenLoaded,
+    input.memoReady,
+    input.receiptChecked,
+  ];
+  const labels = [
+    ["wallet", "Wallet"],
+    ["token", "Token"],
+    ["memo", "Memo payment"],
+    ["receipt", "Reconcile"],
+  ] as const;
+  const firstIncomplete = states.findIndex((done) => !done);
+
+  return labels.map(([key, label], index) => ({
+    key,
+    label,
+    state: states[index] ? "done" : index === firstIncomplete ? "current" : "blocked",
+  }));
+}

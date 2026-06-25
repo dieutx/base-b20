@@ -36,21 +36,21 @@ npm run dev
 6. In the app:
    - keep MetaMask selected, or choose another wallet
    - click **Connect wallet**
-   - click **Add/Switch Base Sepolia**
+   - click **Base Sepolia**
    - edit token fields if needed
-   - click **Preview address**
+   - click **Preview**
    - click **Deploy B20** and sign in the wallet
-   - click **Mint** if you want the initial mint
-   - use **Token inspector** to load an existing B20 token
-   - use **Payment memo** to preview a namespaced `bytes32` memo or send `transferWithMemo`
-   - use **Status** to read connected roles, policy IDs, and paused features
-   - use **Receipt check** to verify adjacent Transfer/Memo event pairing
+   - click **Mint to wallet** if you want the testnet mint
+   - use **Token workspace** to load an existing B20 token
+   - use **Payment intent** to preview a namespaced `bytes32` memo or send `transferWithMemo`
+   - use **Governance snapshot** to read connected roles, policy IDs, and paused features
+   - use **Receipt reconciliation** to verify adjacent Transfer/Memo event pairing
 
 Your wallet needs Base Sepolia ETH for gas.
 
 ## Safe UI Scope
 
-The browser app exposes safe user/operator actions only:
+The browser app opens as a realistic Sepolia test console. It exposes safe user/operator actions only:
 
 - deploy Asset B20 on Base Sepolia
 - mint from the connected minter wallet for testnet/dev use

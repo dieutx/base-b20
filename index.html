@@ -3,219 +3,260 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Base B20 Deployer</title>
+    <title>Base B20 Test Console</title>
   </head>
   <body>
     <main id="app" class="shell">
-      <section class="topbar">
+      <header class="topbar">
         <div>
-          <p class="eyebrow">Base Sepolia</p>
-          <h1>B20 wallet deployer</h1>
+          <p class="eyebrow">Base Sepolia testnet</p>
+          <h1>B20 operations console</h1>
         </div>
-        <div class="status-pill" id="networkStatus">Wallet not connected</div>
+        <div class="top-actions">
+          <div class="status-pill" id="networkStatus">Wallet not connected</div>
+          <button id="connectWallet" type="button">Connect wallet</button>
+        </div>
+      </header>
+
+      <section class="workflow" aria-label="B20 test workflow">
+        <div id="stepWallet" class="workflow-step" data-state="current">
+          <span>1</span>
+          <strong>Wallet</strong>
+        </div>
+        <div id="stepToken" class="workflow-step" data-state="blocked">
+          <span>2</span>
+          <strong>Token</strong>
+        </div>
+        <div id="stepMemo" class="workflow-step" data-state="blocked">
+          <span>3</span>
+          <strong>Memo payment</strong>
+        </div>
+        <div id="stepReceipt" class="workflow-step" data-state="blocked">
+          <span>4</span>
+          <strong>Reconcile</strong>
+        </div>
       </section>
 
-      <section class="layout">
-        <form id="tokenForm" class="panel">
-          <div class="panel-heading">
-            <h2>Token setup</h2>
-            <button id="connectWallet" type="button">Connect wallet</button>
-          </div>
+      <section class="dashboard">
+        <section class="stack">
+          <form id="tokenForm" class="panel">
+            <div class="panel-heading">
+              <h2>Launch workspace</h2>
+              <button id="switchNetwork" type="button">Base Sepolia</button>
+            </div>
 
-          <label>
-            Wallet
-            <select id="walletSelect"></select>
-          </label>
-
-          <div class="grid-two">
             <label>
-              Name
-              <input id="tokenName" autocomplete="off" value="DieuTX B20" />
+              Wallet provider
+              <select id="walletSelect"></select>
             </label>
+
             <label>
-              Symbol
-              <input id="tokenSymbol" autocomplete="off" value="DIEUTX" />
+              Base Sepolia RPC URL
+              <input id="rpcUrl" autocomplete="off" value="https://sepolia.base.org" />
             </label>
-          </div>
 
-          <div class="grid-three">
-            <label>
-              Decimals
-              <input id="tokenDecimals" type="number" min="6" max="18" value="18" />
-            </label>
-            <label>
-              Supply cap
-              <input id="supplyCap" inputmode="decimal" value="1000000" />
-            </label>
-            <label>
-              Initial mint
-              <input id="mintAmount" inputmode="decimal" value="1000" />
-            </label>
-          </div>
-
-          <label>
-            Salt
-            <input id="salt" autocomplete="off" value="dieutx-b20-v1" />
-          </label>
-
-          <label>
-            Base Sepolia RPC URL
-            <input id="rpcUrl" autocomplete="off" value="https://sepolia.base.org" />
-          </label>
-
-          <div class="actions">
-            <button id="switchNetwork" type="button">Add/Switch Base Sepolia</button>
-            <button id="previewAddress" type="button">Preview address</button>
-            <button id="deployToken" type="button">Deploy B20</button>
-          </div>
-        </form>
-
-        <section class="panel">
-          <div class="panel-heading">
-            <h2>Run state</h2>
-            <button id="mintToken" type="button" disabled>Mint</button>
-          </div>
-
-          <dl class="facts">
-            <div>
-              <dt>Account</dt>
-              <dd id="accountValue">-</dd>
+            <div class="grid-two">
+              <label>
+                Name
+                <input id="tokenName" autocomplete="off" value="DieuTX B20" />
+              </label>
+              <label>
+                Symbol
+                <input id="tokenSymbol" autocomplete="off" value="DIEUTX" />
+              </label>
             </div>
-            <div>
-              <dt>Predicted token</dt>
-              <dd id="predictedValue">-</dd>
-            </div>
-            <div>
-              <dt>Token address</dt>
-              <dd id="tokenValue">-</dd>
-            </div>
-            <div>
-              <dt>Balance</dt>
-              <dd id="balanceValue">-</dd>
-            </div>
-          </dl>
 
-          <pre id="log" class="log">Open this forwarded Codespaces URL in a browser with MetaMask, OKX, or another injected wallet.</pre>
-        </section>
-      </section>
+            <div class="grid-three">
+              <label>
+                Decimals
+                <input id="tokenDecimals" type="number" min="6" max="18" value="18" />
+              </label>
+              <label>
+                Supply cap
+                <input id="supplyCap" inputmode="decimal" value="1000000" />
+              </label>
+              <label>
+                Salt
+                <input id="salt" autocomplete="off" value="dieutx-b20-v1" />
+              </label>
+            </div>
 
-      <section class="operations">
-        <section class="panel">
-          <div class="panel-heading">
-            <h2>Token inspector</h2>
-            <button id="loadToken" type="button">Load token</button>
-          </div>
+            <div class="actions">
+              <button id="previewAddress" type="button">Preview</button>
+              <button id="deployToken" type="button">Deploy B20</button>
+            </div>
 
-          <label>
-            Token address
-            <input id="manualTokenAddress" autocomplete="off" placeholder="0xb200..." />
-          </label>
+            <div class="subpanel">
+              <div class="subpanel-heading">
+                <h3>Testnet issuance</h3>
+                <button id="mintToken" type="button" disabled>Mint to wallet</button>
+              </div>
+              <label>
+                Mint amount
+                <input id="mintAmount" inputmode="decimal" value="1000" />
+              </label>
+            </div>
+          </form>
 
-          <dl class="facts compact">
-            <div>
-              <dt>Identity</dt>
-              <dd id="identityValue">-</dd>
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Payment intent</h2>
+              <button id="sendMemoPayment" type="button">Transfer with memo</button>
             </div>
-            <div>
-              <dt>Variant</dt>
-              <dd id="variantValue">-</dd>
+
+            <div class="grid-two">
+              <label>
+                Memo namespace
+                <select id="memoNamespace">
+                  <option value="PAYMENT">PAYMENT</option>
+                  <option value="MINT">MINT</option>
+                  <option value="REDEEM">REDEEM</option>
+                  <option value="BURN">BURN</option>
+                  <option value="POLICY">POLICY</option>
+                </select>
+              </label>
+              <label>
+                Internal reference
+                <input id="memoReference" autocomplete="off" value="order-1" />
+              </label>
             </div>
-            <div>
-              <dt>Total supply</dt>
-              <dd id="supplyValue">-</dd>
+
+            <div class="field-with-action">
+              <label>
+                Merchant / recipient
+                <input id="paymentRecipient" autocomplete="off" placeholder="0x..." />
+              </label>
+              <button id="useSelfRecipient" class="secondary" type="button">Use wallet</button>
             </div>
-            <div>
-              <dt>Supply cap</dt>
-              <dd id="capValue">-</dd>
+
+            <div class="grid-two">
+              <label>
+                Amount
+                <input id="paymentAmount" inputmode="decimal" value="1" />
+              </label>
+              <button id="previewMemo" class="secondary align-end" type="button">Preview memo</button>
             </div>
-            <div>
-              <dt>Contract URI</dt>
-              <dd id="contractUriValue">-</dd>
-            </div>
-          </dl>
+
+            <dl class="facts compact">
+              <div>
+                <dt>Intent status</dt>
+                <dd id="intentStatusValue">draft</dd>
+              </div>
+              <div>
+                <dt>Memo bytes32</dt>
+                <dd id="memoValue">-</dd>
+              </div>
+              <div>
+                <dt>Canonical payload</dt>
+                <dd id="memoPayloadValue">-</dd>
+              </div>
+            </dl>
+          </section>
         </section>
 
-        <section class="panel">
-          <div class="panel-heading">
-            <h2>Payment memo</h2>
-            <button id="sendMemoPayment" type="button">Transfer with memo</button>
-          </div>
-
-          <div class="grid-two">
-            <label>
-              Namespace
-              <select id="memoNamespace">
-                <option value="PAYMENT">PAYMENT</option>
-                <option value="MINT">MINT</option>
-                <option value="REDEEM">REDEEM</option>
-                <option value="BURN">BURN</option>
-                <option value="POLICY">POLICY</option>
-              </select>
-            </label>
-            <label>
-              Reference
-              <input id="memoReference" autocomplete="off" value="order-1" />
-            </label>
-          </div>
-
-          <div class="grid-two">
-            <label>
-              Recipient
-              <input id="paymentRecipient" autocomplete="off" placeholder="0x..." />
-            </label>
-            <label>
-              Amount
-              <input id="paymentAmount" inputmode="decimal" value="1" />
-            </label>
-          </div>
-
-          <button id="previewMemo" class="secondary full-width" type="button">Preview memo</button>
-          <dl class="facts compact">
-            <div>
-              <dt>Memo bytes32</dt>
-              <dd id="memoValue">-</dd>
+        <section class="stack">
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Token workspace</h2>
+              <button id="loadToken" type="button">Load token</button>
             </div>
-            <div>
-              <dt>Payload</dt>
-              <dd id="memoPayloadValue">-</dd>
+
+            <label>
+              Token address
+              <input id="manualTokenAddress" autocomplete="off" placeholder="0xb200..." />
+            </label>
+
+            <dl class="facts">
+              <div>
+                <dt>Account</dt>
+                <dd id="accountValue">-</dd>
+              </div>
+              <div>
+                <dt>Predicted token</dt>
+                <dd id="predictedValue">-</dd>
+              </div>
+              <div>
+                <dt>Loaded token</dt>
+                <dd id="tokenValue">-</dd>
+              </div>
+              <div>
+                <dt>Connected balance</dt>
+                <dd id="balanceValue">-</dd>
+              </div>
+              <div>
+                <dt>Identity</dt>
+                <dd id="identityValue">-</dd>
+              </div>
+              <div>
+                <dt>Variant</dt>
+                <dd id="variantValue">-</dd>
+              </div>
+              <div>
+                <dt>Total supply</dt>
+                <dd id="supplyValue">-</dd>
+              </div>
+              <div>
+                <dt>Supply cap</dt>
+                <dd id="capValue">-</dd>
+              </div>
+              <div>
+                <dt>Contract URI</dt>
+                <dd id="contractUriValue">-</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Governance snapshot</h2>
+              <button id="refreshStatus" type="button">Refresh</button>
             </div>
-          </dl>
+
+            <dl class="facts compact">
+              <div>
+                <dt>Connected roles</dt>
+                <dd id="rolesValue">-</dd>
+              </div>
+              <div>
+                <dt>Policy IDs</dt>
+                <dd id="policiesValue">-</dd>
+              </div>
+              <div>
+                <dt>Paused features</dt>
+                <dd id="pausedValue">-</dd>
+              </div>
+            </dl>
+
+            <div class="guardrail-grid">
+              <span>Role changes: CLI guard</span>
+              <span>Policy changes: CLI guard</span>
+              <span>Pause controls: runbook</span>
+              <span>Freeze/seize: case workflow</span>
+            </div>
+          </section>
         </section>
 
-        <section class="panel">
-          <div class="panel-heading">
-            <h2>Status</h2>
-            <button id="refreshStatus" type="button">Refresh status</button>
-          </div>
-
-          <dl class="facts compact">
-            <div>
-              <dt>Connected roles</dt>
-              <dd id="rolesValue">-</dd>
+        <section class="stack">
+          <section class="panel">
+            <div class="panel-heading">
+              <h2>Receipt reconciliation</h2>
+              <button id="reconcileReceipt" type="button">Check receipt</button>
             </div>
-            <div>
-              <dt>Policy IDs</dt>
-              <dd id="policiesValue">-</dd>
+
+            <label>
+              Transaction hash
+              <input id="receiptHash" autocomplete="off" placeholder="0x..." />
+            </label>
+
+            <pre id="receiptValue" class="log short">-</pre>
+          </section>
+
+          <section class="panel activity-panel">
+            <div class="panel-heading">
+              <h2>Activity log</h2>
             </div>
-            <div>
-              <dt>Paused features</dt>
-              <dd id="pausedValue">-</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section class="panel">
-          <div class="panel-heading">
-            <h2>Receipt check</h2>
-            <button id="reconcileReceipt" type="button">Check receipt</button>
-          </div>
-
-          <label>
-            Transaction hash
-            <input id="receiptHash" autocomplete="off" placeholder="0x..." />
-          </label>
-
-          <pre id="receiptValue" class="log short">-</pre>
+            <pre id="log" class="log">No activity yet.</pre>
+          </section>
         </section>
       </section>
     </main>
