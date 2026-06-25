@@ -98,6 +98,126 @@
           <pre id="log" class="log">Open this forwarded Codespaces URL in a browser with MetaMask, OKX, or another injected wallet.</pre>
         </section>
       </section>
+
+      <section class="operations">
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Token inspector</h2>
+            <button id="loadToken" type="button">Load token</button>
+          </div>
+
+          <label>
+            Token address
+            <input id="manualTokenAddress" autocomplete="off" placeholder="0xb200..." />
+          </label>
+
+          <dl class="facts compact">
+            <div>
+              <dt>Identity</dt>
+              <dd id="identityValue">-</dd>
+            </div>
+            <div>
+              <dt>Variant</dt>
+              <dd id="variantValue">-</dd>
+            </div>
+            <div>
+              <dt>Total supply</dt>
+              <dd id="supplyValue">-</dd>
+            </div>
+            <div>
+              <dt>Supply cap</dt>
+              <dd id="capValue">-</dd>
+            </div>
+            <div>
+              <dt>Contract URI</dt>
+              <dd id="contractUriValue">-</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Payment memo</h2>
+            <button id="sendMemoPayment" type="button">Transfer with memo</button>
+          </div>
+
+          <div class="grid-two">
+            <label>
+              Namespace
+              <select id="memoNamespace">
+                <option value="PAYMENT">PAYMENT</option>
+                <option value="MINT">MINT</option>
+                <option value="REDEEM">REDEEM</option>
+                <option value="BURN">BURN</option>
+                <option value="POLICY">POLICY</option>
+              </select>
+            </label>
+            <label>
+              Reference
+              <input id="memoReference" autocomplete="off" value="order-1" />
+            </label>
+          </div>
+
+          <div class="grid-two">
+            <label>
+              Recipient
+              <input id="paymentRecipient" autocomplete="off" placeholder="0x..." />
+            </label>
+            <label>
+              Amount
+              <input id="paymentAmount" inputmode="decimal" value="1" />
+            </label>
+          </div>
+
+          <button id="previewMemo" class="secondary full-width" type="button">Preview memo</button>
+          <dl class="facts compact">
+            <div>
+              <dt>Memo bytes32</dt>
+              <dd id="memoValue">-</dd>
+            </div>
+            <div>
+              <dt>Payload</dt>
+              <dd id="memoPayloadValue">-</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Status</h2>
+            <button id="refreshStatus" type="button">Refresh status</button>
+          </div>
+
+          <dl class="facts compact">
+            <div>
+              <dt>Connected roles</dt>
+              <dd id="rolesValue">-</dd>
+            </div>
+            <div>
+              <dt>Policy IDs</dt>
+              <dd id="policiesValue">-</dd>
+            </div>
+            <div>
+              <dt>Paused features</dt>
+              <dd id="pausedValue">-</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="panel">
+          <div class="panel-heading">
+            <h2>Receipt check</h2>
+            <button id="reconcileReceipt" type="button">Check receipt</button>
+          </div>
+
+          <label>
+            Transaction hash
+            <input id="receiptHash" autocomplete="off" placeholder="0x..." />
+          </label>
+
+          <pre id="receiptValue" class="log short">-</pre>
+        </section>
+      </section>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

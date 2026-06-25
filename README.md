@@ -41,8 +41,24 @@ npm run dev
    - click **Preview address**
    - click **Deploy B20** and sign in the wallet
    - click **Mint** if you want the initial mint
+   - use **Token inspector** to load an existing B20 token
+   - use **Payment memo** to preview a namespaced `bytes32` memo or send `transferWithMemo`
+   - use **Status** to read connected roles, policy IDs, and paused features
+   - use **Receipt check** to verify adjacent Transfer/Memo event pairing
 
 Your wallet needs Base Sepolia ETH for gas.
+
+## Safe UI Scope
+
+The browser app exposes safe user/operator actions only:
+
+- deploy Asset B20 on Base Sepolia
+- mint from the connected minter wallet for testnet/dev use
+- inspect token identity, supply, cap, variant, roles, policies, and pause state
+- send `transferWithMemo`
+- reconcile a receipt by matching each `Memo` with the immediately previous `Transfer`
+
+It intentionally does not expose public buttons for role grants, policy attach/update, pause/unpause, admin renounce, or `burnBlocked`. Those are sensitive governance operations and belong in protected CLI/runbook flows under `docs/b20/`.
 
 ## RPC Troubleshooting
 
