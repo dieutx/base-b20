@@ -6,7 +6,15 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0",
     "build": "tsc && vite build",
-    "test": "vitest run"
+    "test": "vitest run",
+    "b20:install": "bash scripts/b20/install.sh",
+    "b20:build": "base-forge build",
+    "b20:test": "npm test && base-forge test",
+    "b20:test:live": "base-forge test --match-path 'test/b20-live/*.t.sol' -vvv",
+    "b20:preflight:sepolia": "node --experimental-strip-types scripts/b20/cli.ts preflight config/b20/base-sepolia.asset.json",
+    "b20:deploy:sepolia": "bash scripts/b20/deploy-sepolia.sh config/b20/base-sepolia.asset.json",
+    "b20:smoke:sepolia": "bash scripts/b20/smoke-sepolia.sh config/b20/base-sepolia.asset.json",
+    "b20:plan:mainnet": "node --experimental-strip-types scripts/b20/cli.ts plan config/b20/base-mainnet.asset.json"
   },
   "dependencies": {
     "viem": "^2.45.2"

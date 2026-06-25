@@ -1,0 +1,43 @@
+{
+  "environment": "production",
+  "network": {
+    "name": "base-mainnet",
+    "chainId": 8453,
+    "rpcUrl": "${BASE_MAINNET_RPC_URL}",
+    "explorerUrl": "https://basescan.org",
+    "finalityConfirmations": 30
+  },
+  "token": {
+    "variant": "asset",
+    "name": "DieuTX B20",
+    "symbol": "DIEUTX",
+    "decimals": 18,
+    "salt": "${B20_MAINNET_SALT}",
+    "supplyCap": "1000000",
+    "contractURI": "${B20_MAINNET_CONTRACT_URI}"
+  },
+  "roles": {
+    "admin": "${B20_MAINNET_ADMIN}",
+    "minter": "${B20_MAINNET_MINTER}",
+    "burner": "${B20_MAINNET_BURNER}",
+    "burnBlocked": "${B20_MAINNET_BURN_BLOCKED}",
+    "pauser": "${B20_MAINNET_PAUSER}",
+    "unpauser": "${B20_MAINNET_UNPAUSER}",
+    "metadata": "${B20_MAINNET_METADATA}",
+    "operator": "${B20_MAINNET_OPERATOR}",
+    "policyAdmin": "${B20_MAINNET_POLICY_ADMIN}"
+  },
+  "policies": {
+    "sender": 0,
+    "receiver": 0,
+    "executor": 0,
+    "mintReceiver": 0
+  },
+  "signer": {
+    "mode": "safe-proposal"
+  },
+  "mainnet": {
+    "locked": true,
+    "confirmationPhrase": "PLAN MAINNET B20"
+  }
+}

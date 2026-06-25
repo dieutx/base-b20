@@ -83,6 +83,22 @@ base-forge script script/CreateToken.s.sol --rpc-url "$RPC_URL" --private-key "$
 
 Never commit `.env`, private keys, seed phrases, or private RPC credentials.
 
+## B20 Operations Toolkit
+
+See `docs/b20/` for production-oriented config, payment reconciliation, issuance/redemption, policy, freeze, and mainnet runbooks.
+
+Useful commands:
+
+```bash
+npm run b20:install
+npm run b20:preflight:sepolia
+npm run b20:deploy:sepolia
+npm run b20:smoke:sepolia
+npm run b20:plan:mainnet
+```
+
+Mainnet deploy is plan-only in this repo. Do not broadcast mainnet from the CLI fallback.
+
 ## References
 
 - Base B20 guide: https://docs.base.org/get-started/launch-b20-token

@@ -1,0 +1,42 @@
+{
+  "environment": "testnet",
+  "network": {
+    "name": "base-sepolia",
+    "chainId": 84532,
+    "rpcUrl": "https://sepolia.base.org",
+    "explorerUrl": "https://sepolia.basescan.org",
+    "finalityConfirmations": 6
+  },
+  "token": {
+    "variant": "asset",
+    "name": "DieuTX B20",
+    "symbol": "DIEUTX",
+    "decimals": 18,
+    "salt": "dieutx-b20-v3",
+    "supplyCap": "1000000",
+    "contractURI": "ipfs://bafybeigdyrzt"
+  },
+  "roles": {
+    "admin": "0x1111111111111111111111111111111111111111",
+    "minter": "0x2222222222222222222222222222222222222222",
+    "burner": "0x3333333333333333333333333333333333333333",
+    "burnBlocked": "0x3333333333333333333333333333333333333333",
+    "pauser": "0x4444444444444444444444444444444444444444",
+    "unpauser": "0x5555555555555555555555555555555555555555",
+    "metadata": "0x6666666666666666666666666666666666666666",
+    "operator": "0x8888888888888888888888888888888888888888",
+    "policyAdmin": "0x7777777777777777777777777777777777777777"
+  },
+  "policies": {
+    "sender": 0,
+    "receiver": 0,
+    "executor": 0,
+    "mintReceiver": 0
+  },
+  "signer": {
+    "mode": "local-test-key"
+  },
+  "mainnet": {
+    "locked": true
+  }
+}
