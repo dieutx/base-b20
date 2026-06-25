@@ -5,6 +5,7 @@ import {
   formatPausedFeatures,
   formatPolicySummary,
   formatRoleSummary,
+  getWebAppTestFlow,
   getUiMemoNamespaces,
   isTransferMemoNamespace,
 } from "./uiSafe.ts";
@@ -55,5 +56,20 @@ describe("safe B20 UI summaries", () => {
     expect(getUiMemoNamespaces("guarded")).toEqual(["BURN", "POLICY"]);
     expect(isTransferMemoNamespace("PAYMENT")).toBe(true);
     expect(isTransferMemoNamespace("MINT")).toBe(false);
+  });
+
+  test("describes the web app test flow without dangerous admin actions", () => {
+    const flow = getWebAppTestFlow();
+    expect(flow.map((step) => step.title)).toEqual([
+      "Connect",
+      "Deploy or load",
+      "Mint with memo",
+      "Transfer or redeem",
+      "Reconcile",
+      "Inspect governance",
+    ]);
+    expect(flow.flatMap((step) => [step.action, step.expected]).join(" ")).not.toMatch(
+      /burnBlocked|renounce|unpause|grant role|policy mutation/i,
+    );
   });
 });

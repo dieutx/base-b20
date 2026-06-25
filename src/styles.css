@@ -1,6 +1,6 @@
 :root {
   color: #16201d;
-  background: #eef2ef;
+  background: #f3f5f2;
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -47,7 +47,7 @@ button.secondary {
 .shell {
   width: min(1360px, calc(100vw - 32px));
   margin: 0 auto;
-  padding: 24px 0;
+  padding: 26px 0;
 }
 
 .topbar {
@@ -107,7 +107,7 @@ h3 {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 10px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .workflow-step {
@@ -164,6 +164,7 @@ h3 {
   grid-template-columns: minmax(300px, 1.02fr) minmax(340px, 1.18fr) minmax(320px, 0.95fr);
   gap: 14px;
   align-items: start;
+  margin-top: 14px;
 }
 
 .stack {
@@ -172,10 +173,11 @@ h3 {
 }
 
 .panel {
-  border: 1px solid #c3cec7;
-  border-radius: 8px;
+  border: 1px solid #d2dcd6;
+  border-radius: 10px;
   background: #ffffff;
   padding: 16px;
+  box-shadow: 0 8px 24px rgba(22, 32, 29, 0.04);
 }
 
 .panel-heading,
@@ -185,6 +187,65 @@ h3 {
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 14px;
+}
+
+.panel-copy {
+  max-width: 620px;
+  margin: 5px 0 0;
+  color: #5b6f67;
+  font-size: 0.88rem;
+  line-height: 1.35;
+}
+
+.test-guide {
+  padding: 14px;
+}
+
+.flow-cards {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.flow-card {
+  display: grid;
+  align-content: start;
+  gap: 7px;
+  min-height: 152px;
+  border: 1px solid #e4ebe6;
+  border-radius: 8px;
+  background: #fbfcfb;
+  padding: 12px;
+}
+
+.flow-number {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e7ece8;
+  color: #31443e;
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+
+.flow-card strong {
+  color: #16201d;
+  font-size: 0.9rem;
+}
+
+.flow-card p {
+  margin: 0;
+  color: #40564f;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.flow-card small {
+  color: #6a7b75;
+  font-size: 0.75rem;
+  line-height: 1.35;
 }
 
 .subpanel {
@@ -207,7 +268,7 @@ select {
   min-height: 40px;
   border: 1px solid #b8c5be;
   border-radius: 6px;
-  background: #fbfcfb;
+  background: #ffffff;
   color: #15201d;
   padding: 8px 10px;
 }
@@ -323,7 +384,7 @@ select {
   max-height: 320px;
   overflow: auto;
   border-radius: 6px;
-  background: #111816;
+  background: #0f1715;
   color: #e9fff8;
   padding: 12px;
   white-space: pre-wrap;
@@ -342,6 +403,10 @@ select {
 @media (max-width: 1180px) {
   .dashboard {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .flow-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .stack:last-child {
@@ -369,6 +434,7 @@ select {
   }
 
   .workflow,
+  .flow-cards,
   .dashboard,
   .stack:last-child,
   .grid-two,

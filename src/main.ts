@@ -29,6 +29,7 @@ import {
   formatPausedFeatures,
   formatPolicySummary,
   formatRoleSummary,
+  getWebAppTestFlow,
   isTransferMemoNamespace,
 } from "./b20ops/uiSafe";
 import { hasDeployedCode } from "./deployedCode";
@@ -117,6 +118,7 @@ const elements = {
   stepToken: $("stepToken"),
   stepMemo: $("stepMemo"),
   stepReceipt: $("stepReceipt"),
+  testFlowList: $("testFlowList"),
 };
 
 function log(message: string): void {
@@ -187,6 +189,31 @@ function resetPaymentDraft(): void {
 function resetIssuanceMemo(): void {
   setText(elements.issuanceMemoValue);
   setText(elements.issuancePayloadValue);
+}
+
+function renderTestFlow(): void {
+  elements.testFlowList.replaceChildren(
+    ...getWebAppTestFlow().map((step, index) => {
+      const card = document.createElement("article");
+      card.className = "flow-card";
+
+      const number = document.createElement("span");
+      number.className = "flow-number";
+      number.textContent = String(index + 1);
+
+      const title = document.createElement("strong");
+      title.textContent = step.title;
+
+      const action = document.createElement("p");
+      action.textContent = step.action;
+
+      const expected = document.createElement("small");
+      expected.textContent = step.expected;
+
+      card.append(number, title, action, expected);
+      return card;
+    }),
+  );
 }
 
 function getSelectedWallet(): DiscoveredWallet {
@@ -901,4 +928,5 @@ elements.memoNamespace.addEventListener("change", resetPaymentDraft);
 for (const input of [elements.memoReference, elements.paymentRecipient, elements.paymentAmount]) {
   input.addEventListener("input", resetPaymentDraft);
 }
+renderTestFlow();
 updateWorkflow();

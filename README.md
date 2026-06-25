@@ -54,6 +54,8 @@ Your wallet needs Base Sepolia ETH for gas.
 
 Use this flow to test the app end to end on Base Sepolia:
 
+The web app also shows these steps as **Web app test flow** cards at the top of the console.
+
 1. **Connect wallet**: open the forwarded Codespaces URL in a normal browser with MetaMask, then connect.
 2. **Switch network**: click **Base Sepolia** and approve the wallet prompt.
 3. **Deploy or load token**: click **Preview**, then **Deploy B20**. If the token already exists, load it from **Token workspace**.

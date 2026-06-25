@@ -73,3 +73,44 @@ export function isTransferMemoNamespace(namespace: string): boolean {
   const normalized = namespace.toUpperCase();
   return UI_MEMO_NAMESPACES.transfer.some((allowed) => allowed === normalized);
 }
+
+export type WebAppTestFlowStep = {
+  title: string;
+  action: string;
+  expected: string;
+};
+
+export function getWebAppTestFlow(): readonly WebAppTestFlowStep[] {
+  return [
+    {
+      title: "Connect",
+      action: "Connect MetaMask or another injected wallet, then switch to Base Sepolia.",
+      expected: "The wallet step turns active and the account appears in Token workspace.",
+    },
+    {
+      title: "Deploy or load",
+      action: "Preview the deterministic address, deploy a new B20, or load an existing token.",
+      expected: "Token identity, cap, supply, variant, and connected balance are readable.",
+    },
+    {
+      title: "Mint with memo",
+      action: "Set an issuance reference and mint testnet supply with a MINT memo.",
+      expected: "A mint transaction confirms and the MINT memo hash is displayed.",
+    },
+    {
+      title: "Transfer or redeem",
+      action: "Create a PAYMENT or REDEEM memo, then send transferWithMemo to the recipient.",
+      expected: "The transaction hash is copied into receipt reconciliation.",
+    },
+    {
+      title: "Reconcile",
+      action: "Check the receipt and match each Memo with the immediately previous Transfer.",
+      expected: "The app reports matching log indexes and validation status.",
+    },
+    {
+      title: "Inspect governance",
+      action: "Refresh role, policy, and pause state after token operations.",
+      expected: "The snapshot stays read-only; guarded workflows remain documented but locked.",
+    },
+  ];
+}
