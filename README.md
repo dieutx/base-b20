@@ -1,5 +1,7 @@
 # Base B20 Wallet Deployer
 
+![Base B20 operations console](docs/assets/base-b20-console.svg)
+
 Deploy a Base B20 token from GitHub Codespaces using a browser wallet. The app defaults to MetaMask when it is available, but OKX and other injected wallets also work.
 
 No private key is needed in Codespaces.
