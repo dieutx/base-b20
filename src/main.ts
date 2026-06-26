@@ -25,10 +25,12 @@ import { B20_POLICY_SCOPES, B20_ROLES } from "./b20ops/constants";
 import { createMemo, type MemoRecord } from "./b20ops/memo";
 import { pairMemoTransfers, validatePaymentPair, type B20RawLog } from "./b20ops/reconciliation";
 import {
+  type AppMode,
   deriveWorkflowSteps,
   formatPausedFeatures,
   formatPolicySummary,
   formatRoleSummary,
+  getAppModes,
   getWebAppTestFlow,
   isTransferMemoNamespace,
 } from "./b20ops/uiSafe";
@@ -53,10 +55,12 @@ const state: {
   memo?: MemoRecord;
   receiptChecked: boolean;
   walletManuallySelected: boolean;
+  activeMode: AppMode["id"];
 } = {
   wallets: [],
   receiptChecked: false,
   walletManuallySelected: false,
+  activeMode: "deploy",
 };
 
 const $ = <T extends HTMLElement>(id: string): T => {
@@ -119,6 +123,10 @@ const elements = {
   stepMemo: $("stepMemo"),
   stepReceipt: $("stepReceipt"),
   testFlowList: $("testFlowList"),
+  modeTabs: $("modeTabs"),
+  modeTitle: $("modeTitle"),
+  modeSummary: $("modeSummary"),
+  modeViews: Array.from(document.querySelectorAll<HTMLElement>("[data-mode-view]")),
 };
 
 function log(message: string): void {
@@ -214,6 +222,42 @@ function renderTestFlow(): void {
       return card;
     }),
   );
+}
+
+function renderModeTabs(): void {
+  elements.modeTabs.replaceChildren(
+    ...getAppModes().map((mode) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "mode-tab";
+      button.dataset.mode = mode.id;
+      button.setAttribute("role", "tab");
+      button.textContent = mode.label;
+      button.addEventListener("click", () => {
+        setActiveMode(mode.id);
+      });
+      return button;
+    }),
+  );
+}
+
+function setActiveMode(modeId: AppMode["id"]): void {
+  const mode = getAppModes().find((item) => item.id === modeId) ?? getAppModes()[0];
+  state.activeMode = mode.id;
+  setText(elements.modeTitle, mode.label);
+  setText(elements.modeSummary, mode.summary);
+
+  for (const view of elements.modeViews) {
+    const active = view.dataset.modeView === mode.id;
+    view.hidden = !active;
+    view.classList.toggle("is-active", active);
+  }
+
+  for (const button of elements.modeTabs.querySelectorAll<HTMLButtonElement>(".mode-tab")) {
+    const active = button.dataset.mode === mode.id;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-selected", String(active));
+  }
 }
 
 function getSelectedWallet(): DiscoveredWallet {
@@ -581,6 +625,7 @@ async function deployToken(): Promise<void> {
   elements.mintToken.disabled = false;
   log(`B20 token deployed at ${predictedToken}`);
   await loadTokenDetails(predictedToken);
+  setActiveMode("mint");
 }
 
 async function mintToken(): Promise<void> {
@@ -636,6 +681,7 @@ async function mintToken(): Promise<void> {
   });
   setText(elements.balanceValue, `${formatUnits(balance, decimals)} ${getActiveSymbol()}`);
   log(`Mint with memo confirmed. Balance: ${formatUnits(balance, decimals)}`);
+  setActiveMode("transfer");
 }
 
 function buildMemoPreview(): MemoRecord {
@@ -713,6 +759,7 @@ async function sendMemoPayment(): Promise<void> {
   await refreshLoadedBalance();
   setText(elements.intentStatusValue, "confirmed");
   log(`Memo payment confirmed in block ${receipt.blockNumber.toString()}.`);
+  setActiveMode("reconcile");
 }
 
 async function refreshStatus(): Promise<void> {
@@ -910,6 +957,7 @@ bindAction(elements.deployToken, deployToken);
 bindAction(elements.mintToken, mintToken);
 bindAction(elements.loadToken, async () => {
   await loadTokenDetails();
+  setActiveMode("mint");
 });
 bindAction(elements.previewMemo, previewMemo);
 bindAction(elements.sendMemoPayment, sendMemoPayment);
@@ -928,5 +976,7 @@ elements.memoNamespace.addEventListener("change", resetPaymentDraft);
 for (const input of [elements.memoReference, elements.paymentRecipient, elements.paymentAmount]) {
   input.addEventListener("input", resetPaymentDraft);
 }
+renderModeTabs();
+setActiveMode("deploy");
 renderTestFlow();
 updateWorkflow();

@@ -37,69 +37,82 @@
         </div>
       </section>
 
-      <section class="test-guide panel">
-        <div class="panel-heading">
+      <section class="mode-shell">
+        <nav id="modeTabs" class="mode-tabs" role="tablist" aria-label="B20 operation modes"></nav>
+
+        <div class="mode-heading">
           <div>
-            <h2>Web app test flow</h2>
-            <p class="panel-copy">Follow these cards from left to right to test the safe Base Sepolia flow.</p>
+            <p class="eyebrow">Current operation</p>
+            <h2 id="modeTitle">Deploy</h2>
+            <p id="modeSummary" class="panel-copy">Create a new Asset B20 or load an existing Base Sepolia token.</p>
           </div>
+          <button id="switchNetwork" type="button">Base Sepolia</button>
         </div>
-        <div id="testFlowList" class="flow-cards"></div>
-      </section>
 
-      <section class="dashboard">
-        <section class="stack">
-          <form id="tokenForm" class="panel">
-            <div class="panel-heading">
-              <h2>Launch workspace</h2>
-              <button id="switchNetwork" type="button">Base Sepolia</button>
-            </div>
+        <section class="app-workspace">
+          <section class="primary-stack">
+            <form id="tokenForm" class="panel mode-view is-active" data-mode-view="deploy">
+              <div class="panel-heading">
+                <div>
+                  <h2>Asset launch</h2>
+                  <p class="panel-copy">Start with Base Sepolia. Mainnet deploys stay outside this browser UI.</p>
+                </div>
+              </div>
 
-            <label>
-              Wallet provider
-              <select id="walletSelect"></select>
-            </label>
+              <div class="variant-switch" aria-label="B20 variant">
+                <button class="variant-option is-active" type="button">Asset</button>
+                <button class="variant-option" type="button" disabled>Stablecoin</button>
+              </div>
 
-            <label>
-              Base Sepolia RPC URL
-              <input id="rpcUrl" autocomplete="off" value="https://sepolia.base.org" />
-            </label>
-
-            <div class="grid-two">
               <label>
-                Name
-                <input id="tokenName" autocomplete="off" value="DieuTX B20" />
+                Wallet provider
+                <select id="walletSelect"></select>
               </label>
-              <label>
-                Symbol
-                <input id="tokenSymbol" autocomplete="off" value="DIEUTX" />
-              </label>
-            </div>
 
-            <div class="grid-three">
               <label>
-                Decimals
-                <input id="tokenDecimals" type="number" min="6" max="18" value="18" />
+                Base Sepolia RPC URL
+                <input id="rpcUrl" autocomplete="off" value="https://sepolia.base.org" />
               </label>
-              <label>
-                Supply cap
-                <input id="supplyCap" inputmode="decimal" value="1000000" />
-              </label>
-              <label>
-                Salt
-                <input id="salt" autocomplete="off" value="dieutx-b20-v1" />
-              </label>
-            </div>
 
-            <div class="actions">
-              <button id="previewAddress" type="button">Preview</button>
-              <button id="deployToken" type="button">Deploy B20</button>
-            </div>
+              <div class="grid-two">
+                <label>
+                  Name
+                  <input id="tokenName" autocomplete="off" value="DieuTX B20" />
+                </label>
+                <label>
+                  Symbol
+                  <input id="tokenSymbol" autocomplete="off" value="DIEUTX" />
+                </label>
+              </div>
 
-            <div class="subpanel">
-              <div class="subpanel-heading">
-                <h3>Mint with memo</h3>
-                <button id="mintToken" type="button" disabled>Mint with memo</button>
+              <div class="grid-three">
+                <label>
+                  Decimals
+                  <input id="tokenDecimals" type="number" min="6" max="18" value="18" />
+                </label>
+                <label>
+                  Supply cap
+                  <input id="supplyCap" inputmode="decimal" value="1000000" />
+                </label>
+                <label>
+                  Salt
+                  <input id="salt" autocomplete="off" value="dieutx-b20-v1" />
+                </label>
+              </div>
+
+              <div class="actions">
+                <button id="previewAddress" type="button">Preview address</button>
+                <button id="deployToken" type="button">Deploy B20</button>
+              </div>
+            </form>
+
+            <section class="panel mode-view" data-mode-view="mint" hidden>
+              <div class="panel-heading">
+                <div>
+                  <h2>Mint with memo</h2>
+                  <p class="panel-copy">Use the connected wallet after the token is deployed or loaded.</p>
+                </div>
+                <button id="mintToken" type="button" disabled>Mint</button>
               </div>
               <div class="grid-two">
                 <label>
@@ -121,186 +134,197 @@
                   <dd id="issuancePayloadValue">-</dd>
                 </div>
               </dl>
-            </div>
-          </form>
+            </section>
 
-          <section class="panel">
-            <div class="panel-heading">
-              <h2>Transfer / redeem</h2>
-              <button id="sendMemoPayment" type="button">Send with memo</button>
-            </div>
+            <section class="panel mode-view" data-mode-view="transfer" hidden>
+              <div class="panel-heading">
+                <div>
+                  <h2>Transfer or redeem</h2>
+                  <p class="panel-copy">Only PAYMENT and REDEEM memo transfers are available from the public UI.</p>
+                </div>
+                <button id="sendMemoPayment" type="button">Send with memo</button>
+              </div>
 
-            <div class="grid-two">
+              <div class="grid-two">
+                <label>
+                  Operation
+                  <select id="memoNamespace">
+                    <option value="PAYMENT">PAYMENT</option>
+                    <option value="REDEEM">REDEEM</option>
+                  </select>
+                </label>
+                <label>
+                  Internal reference
+                  <input id="memoReference" autocomplete="off" value="order-1" />
+                </label>
+              </div>
+
+              <div class="field-with-action">
+                <label>
+                  Merchant / recipient
+                  <input id="paymentRecipient" autocomplete="off" placeholder="0x..." />
+                </label>
+                <button id="useSelfRecipient" class="secondary" type="button">Use wallet</button>
+              </div>
+
+              <div class="grid-two">
+                <label>
+                  Amount
+                  <input id="paymentAmount" inputmode="decimal" value="1" />
+                </label>
+                <button id="previewMemo" class="secondary align-end" type="button">Preview memo</button>
+              </div>
+
+              <dl class="facts compact">
+                <div>
+                  <dt>Intent status</dt>
+                  <dd id="intentStatusValue">draft</dd>
+                </div>
+                <div>
+                  <dt>Memo bytes32</dt>
+                  <dd id="memoValue">-</dd>
+                </div>
+                <div>
+                  <dt>Canonical payload</dt>
+                  <dd id="memoPayloadValue">-</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section class="panel mode-view" data-mode-view="reconcile" hidden>
+              <div class="panel-heading">
+                <div>
+                  <h2>Receipt reconciliation</h2>
+                  <p class="panel-copy">Checks adjacent Transfer/Memo log pairs instead of trusting a tx hash alone.</p>
+                </div>
+                <button id="reconcileReceipt" type="button">Check receipt</button>
+              </div>
+
               <label>
-                Operation
-                <select id="memoNamespace">
-                  <option value="PAYMENT">PAYMENT</option>
-                  <option value="REDEEM">REDEEM</option>
-                </select>
+                Transaction hash
+                <input id="receiptHash" autocomplete="off" placeholder="0x..." />
               </label>
+
+              <pre id="receiptValue" class="log short">-</pre>
+            </section>
+
+            <section class="panel mode-view" data-mode-view="status" hidden>
+              <div class="panel-heading">
+                <div>
+                  <h2>Governance status</h2>
+                  <p class="panel-copy">Read current roles, policy IDs, and paused B20 features.</p>
+                </div>
+                <button id="refreshStatus" type="button">Refresh</button>
+              </div>
+
+              <dl class="facts compact">
+                <div>
+                  <dt>Connected roles</dt>
+                  <dd id="rolesValue">-</dd>
+                </div>
+                <div>
+                  <dt>Policy IDs</dt>
+                  <dd id="policiesValue">-</dd>
+                </div>
+                <div>
+                  <dt>Paused features</dt>
+                  <dd id="pausedValue">-</dd>
+                </div>
+              </dl>
+
+              <div class="guardrail-grid">
+                <span>Role changes: CLI guard</span>
+                <span>Policy changes: CLI guard</span>
+                <span>Pause controls: runbook</span>
+                <span>Freeze/seize: case workflow</span>
+              </div>
+
+              <div class="workflow-list separated">
+                <div>
+                  <strong>Burn with memo</strong>
+                  <span>BURN memo stays in redemption/operator workflows with approval.</span>
+                </div>
+                <div>
+                  <strong>Policy case memo</strong>
+                  <span>POLICY memo is an offchain case reference. No public mutation button is exposed.</span>
+                </div>
+                <div>
+                  <strong>Freeze and seize</strong>
+                  <span>Requires case review, sender-policy block, approval, and guarded burnBlocked execution.</span>
+                </div>
+              </div>
+            </section>
+          </section>
+
+          <aside class="side-rail">
+            <section class="panel token-card">
+              <div class="panel-heading">
+                <h2>Token workspace</h2>
+                <button id="loadToken" type="button">Load token</button>
+              </div>
+
               <label>
-                Internal reference
-                <input id="memoReference" autocomplete="off" value="order-1" />
+                Token address
+                <input id="manualTokenAddress" autocomplete="off" placeholder="0xb200..." />
               </label>
-            </div>
 
-            <div class="field-with-action">
-              <label>
-                Merchant / recipient
-                <input id="paymentRecipient" autocomplete="off" placeholder="0x..." />
-              </label>
-              <button id="useSelfRecipient" class="secondary" type="button">Use wallet</button>
-            </div>
+              <dl class="facts">
+                <div>
+                  <dt>Account</dt>
+                  <dd id="accountValue">-</dd>
+                </div>
+                <div>
+                  <dt>Predicted token</dt>
+                  <dd id="predictedValue">-</dd>
+                </div>
+                <div>
+                  <dt>Loaded token</dt>
+                  <dd id="tokenValue">-</dd>
+                </div>
+                <div>
+                  <dt>Connected balance</dt>
+                  <dd id="balanceValue">-</dd>
+                </div>
+                <div>
+                  <dt>Identity</dt>
+                  <dd id="identityValue">-</dd>
+                </div>
+                <div>
+                  <dt>Variant</dt>
+                  <dd id="variantValue">-</dd>
+                </div>
+                <div>
+                  <dt>Total supply</dt>
+                  <dd id="supplyValue">-</dd>
+                </div>
+                <div>
+                  <dt>Supply cap</dt>
+                  <dd id="capValue">-</dd>
+                </div>
+                <div>
+                  <dt>Contract URI</dt>
+                  <dd id="contractUriValue">-</dd>
+                </div>
+              </dl>
+            </section>
 
-            <div class="grid-two">
-              <label>
-                Amount
-                <input id="paymentAmount" inputmode="decimal" value="1" />
-              </label>
-              <button id="previewMemo" class="secondary align-end" type="button">Preview memo</button>
-            </div>
+            <section class="test-guide panel">
+              <div class="panel-heading">
+                <div>
+                  <h2>Web app test flow</h2>
+                  <p class="panel-copy">A short Sepolia path for another developer to repeat.</p>
+                </div>
+              </div>
+              <div id="testFlowList" class="flow-cards"></div>
+            </section>
 
-            <dl class="facts compact">
-              <div>
-                <dt>Intent status</dt>
-                <dd id="intentStatusValue">draft</dd>
+            <section class="panel activity-panel">
+              <div class="panel-heading">
+                <h2>Activity log</h2>
               </div>
-              <div>
-                <dt>Memo bytes32</dt>
-                <dd id="memoValue">-</dd>
-              </div>
-              <div>
-                <dt>Canonical payload</dt>
-                <dd id="memoPayloadValue">-</dd>
-              </div>
-            </dl>
-          </section>
-        </section>
-
-        <section class="stack">
-          <section class="panel">
-            <div class="panel-heading">
-              <h2>Token workspace</h2>
-              <button id="loadToken" type="button">Load token</button>
-            </div>
-
-            <label>
-              Token address
-              <input id="manualTokenAddress" autocomplete="off" placeholder="0xb200..." />
-            </label>
-
-            <dl class="facts">
-              <div>
-                <dt>Account</dt>
-                <dd id="accountValue">-</dd>
-              </div>
-              <div>
-                <dt>Predicted token</dt>
-                <dd id="predictedValue">-</dd>
-              </div>
-              <div>
-                <dt>Loaded token</dt>
-                <dd id="tokenValue">-</dd>
-              </div>
-              <div>
-                <dt>Connected balance</dt>
-                <dd id="balanceValue">-</dd>
-              </div>
-              <div>
-                <dt>Identity</dt>
-                <dd id="identityValue">-</dd>
-              </div>
-              <div>
-                <dt>Variant</dt>
-                <dd id="variantValue">-</dd>
-              </div>
-              <div>
-                <dt>Total supply</dt>
-                <dd id="supplyValue">-</dd>
-              </div>
-              <div>
-                <dt>Supply cap</dt>
-                <dd id="capValue">-</dd>
-              </div>
-              <div>
-                <dt>Contract URI</dt>
-                <dd id="contractUriValue">-</dd>
-              </div>
-            </dl>
-          </section>
-
-          <section class="panel">
-            <div class="panel-heading">
-              <h2>Governance snapshot</h2>
-              <button id="refreshStatus" type="button">Refresh</button>
-            </div>
-
-            <dl class="facts compact">
-              <div>
-                <dt>Connected roles</dt>
-                <dd id="rolesValue">-</dd>
-              </div>
-              <div>
-                <dt>Policy IDs</dt>
-                <dd id="policiesValue">-</dd>
-              </div>
-              <div>
-                <dt>Paused features</dt>
-                <dd id="pausedValue">-</dd>
-              </div>
-            </dl>
-
-            <div class="guardrail-grid">
-              <span>Role changes: CLI guard</span>
-              <span>Policy changes: CLI guard</span>
-              <span>Pause controls: runbook</span>
-              <span>Freeze/seize: case workflow</span>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-heading">
-              <h2>Guarded workflows</h2>
-            </div>
-
-            <div class="workflow-list">
-              <div>
-                <strong>Burn with memo</strong>
-                <span>BURN memo is for redemption/operator workflows. Use CLI/runbook with burner role and approval.</span>
-              </div>
-              <div>
-                <strong>Policy case memo</strong>
-                <span>POLICY memo is for offchain case references. No public policy mutation buttons are exposed.</span>
-              </div>
-              <div>
-                <strong>Freeze and seize</strong>
-                <span>Requires case review, sender policy block, dual approval, and guarded burnBlocked execution.</span>
-              </div>
-            </div>
-          </section>
-        </section>
-
-        <section class="stack">
-          <section class="panel">
-            <div class="panel-heading">
-              <h2>Receipt reconciliation</h2>
-              <button id="reconcileReceipt" type="button">Check receipt</button>
-            </div>
-
-            <label>
-              Transaction hash
-              <input id="receiptHash" autocomplete="off" placeholder="0x..." />
-            </label>
-
-            <pre id="receiptValue" class="log short">-</pre>
-          </section>
-
-          <section class="panel activity-panel">
-            <div class="panel-heading">
-              <h2>Activity log</h2>
-            </div>
-            <pre id="log" class="log">No activity yet.</pre>
-          </section>
+              <pre id="log" class="log">No activity yet.</pre>
+            </section>
+          </aside>
         </section>
       </section>
     </main>

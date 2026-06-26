@@ -5,6 +5,7 @@ import {
   formatPausedFeatures,
   formatPolicySummary,
   formatRoleSummary,
+  getAppModes,
   getWebAppTestFlow,
   getUiMemoNamespaces,
   isTransferMemoNamespace,
@@ -71,5 +72,16 @@ describe("safe B20 UI summaries", () => {
     expect(flow.flatMap((step) => [step.action, step.expected]).join(" ")).not.toMatch(
       /burnBlocked|renounce|unpause|grant role|policy mutation/i,
     );
+  });
+
+  test("defines focused app modes in the intended user flow order", () => {
+    expect(getAppModes().map((mode) => mode.id)).toEqual(["deploy", "mint", "transfer", "reconcile", "status"]);
+    expect(getAppModes().map((mode) => mode.label)).toEqual([
+      "Deploy",
+      "Mint",
+      "Transfer/Redeem",
+      "Reconcile",
+      "Status",
+    ]);
   });
 });

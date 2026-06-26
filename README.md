@@ -39,14 +39,12 @@ npm run dev
    - keep MetaMask selected, or choose another wallet
    - click **Connect wallet**
    - click **Base Sepolia**
-   - edit token fields if needed
-   - click **Preview**
-   - click **Deploy B20** and sign in the wallet
-   - click **Mint with memo** if you want a testnet issuance
+   - use the **Deploy** tab to edit token fields, preview the address, and deploy
+   - use the **Mint** tab if you want a testnet issuance with memo
+   - use the **Transfer/Redeem** tab to preview a `PAYMENT` or `REDEEM` memo and send `transferWithMemo`
+   - use the **Reconcile** tab to verify adjacent Transfer/Memo event pairing
+   - use the **Status** tab to read connected roles, policy IDs, paused features, and guarded workflow notes
    - use **Token workspace** to load an existing B20 token
-   - use **Transfer / redeem** to preview a `PAYMENT` or `REDEEM` memo and send `transferWithMemo`
-   - use **Governance snapshot** to read connected roles, policy IDs, and paused features
-   - use **Receipt reconciliation** to verify adjacent Transfer/Memo event pairing
 
 Your wallet needs Base Sepolia ETH for gas.
 
@@ -54,7 +52,7 @@ Your wallet needs Base Sepolia ETH for gas.
 
 Use this flow to test the app end to end on Base Sepolia:
 
-The web app also shows these steps as **Web app test flow** cards at the top of the console.
+The web app also shows these steps as **Web app test flow** cards in the side rail.
 
 1. **Connect wallet**: open the forwarded Codespaces URL in a normal browser with MetaMask, then connect.
 2. **Switch network**: click **Base Sepolia** and approve the wallet prompt.
@@ -63,7 +61,7 @@ The web app also shows these steps as **Web app test flow** cards at the top of 
 5. **Transfer payment**: choose `PAYMENT`, enter recipient and amount, click **Preview memo**, then **Send with memo**. This calls `transferWithMemo`.
 6. **Test redemption transfer**: choose `REDEEM` instead of `PAYMENT`, enter a redemption wallet address, then send with memo. This is a transfer-to-redemption flow, not a burn.
 7. **Reconcile receipt**: after a transaction confirms, keep or paste the tx hash in **Receipt reconciliation** and click **Check receipt**. The checker pairs each `Memo` only with the immediately previous `Transfer`.
-8. **Read governance state**: click **Refresh** in **Governance snapshot** to inspect roles, policy IDs, and paused features.
+8. **Read governance state**: open **Status** and click **Refresh** to inspect roles, policy IDs, and paused features.
 
 `BURN` and `POLICY` memos are visible as guarded workflows only. The browser UI does not expose burn, policy mutation, pause, or freeze/seize buttons.
 

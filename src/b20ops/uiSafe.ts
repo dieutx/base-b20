@@ -74,6 +74,42 @@ export function isTransferMemoNamespace(namespace: string): boolean {
   return UI_MEMO_NAMESPACES.transfer.some((allowed) => allowed === normalized);
 }
 
+export type AppMode = {
+  id: "deploy" | "mint" | "transfer" | "reconcile" | "status";
+  label: string;
+  summary: string;
+};
+
+export function getAppModes(): readonly AppMode[] {
+  return [
+    {
+      id: "deploy",
+      label: "Deploy",
+      summary: "Create a new Asset B20 or load an existing Base Sepolia token.",
+    },
+    {
+      id: "mint",
+      label: "Mint",
+      summary: "Issue testnet supply with a MINT memo and role-aware checks.",
+    },
+    {
+      id: "transfer",
+      label: "Transfer/Redeem",
+      summary: "Send PAYMENT or REDEEM memo transfers through the connected wallet.",
+    },
+    {
+      id: "reconcile",
+      label: "Reconcile",
+      summary: "Validate that each Memo event matches the immediately previous Transfer.",
+    },
+    {
+      id: "status",
+      label: "Status",
+      summary: "Inspect roles, policies, paused features, and guarded B20 workflows.",
+    },
+  ];
+}
+
 export type WebAppTestFlowStep = {
   title: string;
   action: string;
